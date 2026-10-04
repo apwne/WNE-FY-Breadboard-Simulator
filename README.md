@@ -17,7 +17,7 @@ A browser-based breadboard simulator for practising first-year circuit wiring an
   - Raspberry Pi Pico 2 WH
   - Kitronik Motor Driver Board for Pico
   - LD1117-3.3 regulator
-  - Resistors, LEDs, 10K thermistor
+  - Resistors, LEDs, diodes (1N4001, 1N5817), 10K thermistor
   - Slide switch, micro switch
   - Standard (SG-5010) and continuous-rotation servos
   - IR distance sensor (10–80 cm), DC gear motor
@@ -40,11 +40,22 @@ A browser-based breadboard simulator for practising first-year circuit wiring an
 - **Show strips:** reveals the hidden metal strips under the holes, coloured by voltage.
 - **Challenges:** automatically checked tasks in three groups:
   - *Build it:* wire a circuit yourself.
-  - *Fix the fault:* repair a pre-built broken circuit.
+  - *Fix the fault:* repair a pre-built broken circuit, including two based on the class robot's power wiring (6 V pack → slide switch → LD1117 3.3 V → diode → Pico VSYS, with an indicator LED).
   - *Measure it:* use the multimeter and type the reading. Values are randomised on each restart.
-- **Examples:** 20 ready-made circuits, including the class servo wiring (servo on GP15, 6 V AA pack, shared ground).
+- **Assignments:** turn challenges into homework. See below.
+- **Examples:** 21 ready-made circuits, including the robot power circuit, including the class servo wiring (servo on GP15, 6 V AA pack, shared ground).
 
 Work, code and challenge progress are saved in each student's own browser.
+
+## Assignments (homework without any server)
+
+1. Open **Challenges → Create an assignment**, name it, tick the challenges and press **Create link**. Post the link on Canvas.
+2. Each student opens the link and types their name. The challenges appear in a random order, and attempts are unlimited.
+3. Progress saves in the student's browser, so they can stop and come back. **Save progress file** and **Continue from file** move it to another computer.
+4. When every challenge passes, the student gets one completion-card image to upload to Canvas. It shows active time (only while they are working), time and attempts per challenge, what they fixed along the way, *Strengths* and *Watch for*, and a verification code.
+5. To check a card, open **Challenges → Check a completion code** and enter the student's name, the code and the assignment link. An edited card or a different name fails the check.
+
+Assignments have no programming questions, and *Show a solution* and the examples are turned off while a challenge is open. Before the first continuity test, a popup reminds students to turn their speaker volume up. Nothing is sent anywhere: the assignment lives in the link and progress stays on the student's computer.
 
 ## Programming the Pico in MicroPython
 

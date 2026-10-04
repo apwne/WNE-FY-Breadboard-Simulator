@@ -342,6 +342,22 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
 .ch-ask input{flex:1;min-width:0;font-family:var(--font-mono);font-size:14px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--chip)}
 .ch-win{background:var(--accent-soft);border-radius:8px;padding:9px 11px;font-size:13px;font-weight:500}
 .ch-acts{display:flex;gap:6px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,16,15,.55);display:grid;place-items:center;padding:16px}
+.modal[hidden]{display:none}
+.modal-box{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:20px 22px;width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:10px}
+.modal-box.wide{width:min(1020px,100%)}
+.modal-box h2{margin:0;font-size:18px}
+.modal-box p{margin:0;font-size:14px;line-height:1.45}
+.hw-l{margin:0;padding-left:22px;font-size:13px;columns:2;column-gap:24px}
+.hw-name{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.hw-name input{font:inherit;font-weight:400;font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--chip);color:var(--ink)}
+.hw-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.hw-bar{height:6px;border-radius:3px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.hw-bar i{display:block;height:100%;background:var(--accent)}
+.hw-pick{display:flex;gap:7px;align-items:center;font-size:13px;padding:2px 0}
+.hw-link{font-family:var(--font-mono);font-size:11.5px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--chip);color:var(--ink);width:100%}
+.hw-card{width:100%;height:auto;border:1px solid var(--line);border-radius:8px}
+.hw-tools{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px}
 .legend{position:absolute;right:10px;top:10px;display:flex;align-items:center;gap:7px;font-size:11.5px;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:5px 9px;color:var(--muted)}
 .lbar{width:70px;height:8px;border-radius:4px;background:linear-gradient(90deg,hsl(215 80% 45%),hsl(160 80% 45%),hsl(90 80% 45%),hsl(40 85% 50%),hsl(0 80% 50%))}
 .lgrey{width:10px;height:8px;border-radius:3px;background:#7d8a86}
@@ -451,6 +467,7 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
   </main>
   <footer class="status" id="status"></footer>
 </div>
+<div class="modal" id="modal" hidden><div class="modal-box" id="modalBox" role="dialog" aria-modal="true"></div></div>
 
 <script>
 'use strict';
@@ -616,6 +633,20 @@ DEF.led = { kind:'lead', z:2, name:'LED (5 mm)', short:'LED', desc:'End 1 is the
     if(I>0.05){ p.props.burnt=true; A.burn(`The ${p.props.color} LED burned out at ${fmtI(I)}. Add a series resistor (220–330 Ω).`); }
     else if(I>0.025) A.warn('warn',`LED current is ${fmtI(I)}. 5 mm LEDs are rated about 20 mA.`); },
   insp(p){ return `<div class="field"><h4>Colour</h4><div class="chips">${Object.keys(LEDC).map(k=>`<button class="chipb${p.props.color===k?' on':''}" data-set="color" data-val="${k}">${k} · ${LEDC[k].vf} V</button>`).join('')}</div></div>`; }
+};
+
+const DIODES={'1N4001':{vf:0.7,rs:0.1,note:'general-purpose silicon, about 0.7 V drop'},'1N5817':{vf:0.3,rs:0.1,note:'Schottky, about 0.3 V drop'}};
+DEF.diode = { kind:'lead', z:2, name:'Diode (1N4001 / 1N5817)', short:'Diode', desc:'End 1 is the anode. End 2 is the cathode, marked by the grey band. Current flows only from anode to cathode, so a diode blocks a reversed battery.',
+  pinNames:['anode','cathode (band)'], props:{model:'1N4001'}, vec:[4,0],
+  el(p,c){ const d=DIODES[p.props.model]||DIODES['1N4001']; c.add(Diode(c.n(0),c.n(1),d.vf,d.rs),'d'); },
+  render(p,S){ const g=leadGeom(p);
+    const body=`<rect x="-13" y="-5" width="26" height="10" rx="2" fill="#1d1f22" stroke="${S.on?'#3fb98f':'#000'}" stroke-width="${S.on?1.6:1}"/><rect x="7" y="-5" width="3.5" height="10" fill="#c9ced3"/>`;
+    return legs(g)+`<g transform="translate(${g.mx},${g.my}) rotate(${g.ang})">${body}</g>`+endDots(p); },
+  an(p,A,o){ const a=A.node(0), k=A.node(1); legCheck(p,A); const I=A.refs.d.I, va=A.v(a), vk=A.v(k); o.on=!!A.refs.d.s.on;
+    o.ro.push(['Voltage across', va!=null&&vk!=null?fmtV(va-vk):'—'],['Current',fmtI(Math.max(0,I))],['State', o.on?'conducting':'blocking', o.on?'ok':'muted']);
+    if(va!=null&&vk!=null&&vk-va>0.5) o.ro.push(['Hint','Reverse biased: the band (cathode) faces the higher voltage, so no current flows','warn']);
+    if(I>1) A.warn('warn',`The diode is carrying ${fmtI(I)}; these diodes are rated 1 A.`); },
+  insp(p){ return `<div class="field"><h4>Type</h4><div class="chips">${Object.keys(DIODES).map(k=>`<button class="chipb${p.props.model===k?' on':''}" data-set="model" data-val="${k}">${k} · ${DIODES[k].vf} V</button>`).join('')}</div><p class="note">${DIODES[p.props.model].note}. The band marks the cathode.</p></div>`; }
 };
 
 DEF.thermistor = { kind:'lead', z:2, name:'10K precision epoxy thermistor', short:'Thermistor 10K', desc:'NTC, 10 kΩ at 25 °C, B = 3950. Pair it with a 10 kΩ resistor as a divider into an ADC pin.',
@@ -919,7 +950,8 @@ DEF.meter = { kind:'module', z:5, probe:true, name:'Digital multimeter', short:'
         if(m==='R'){ if(!isFinite(Rm)||Rm>4e7) disp='OL'; else [disp,unit]=fmtRd(Rm); }
         else if(m==='C'){ if(isFinite(Rm)&&Rm<30){ cont=true; disp=Rm.toFixed(1); } else disp='OL'; }
         else { const na=A.net(a), nb=A.net(b); const L=parts.find(q=>q.type==='led'&&!q.props.burnt&&A.net(nodeOf(q,0))===na&&A.net(nodeOf(q,1))===nb);
-          disp = isFinite(Rm)&&Rm<30 ? '0.000' : L ? (LEDC[L.props.color].vf+0.05).toFixed(3) : 'OL'; } } }
+          const Dd=parts.find(q=>q.type==='diode'&&A.net(nodeOf(q,0))===na&&A.net(nodeOf(q,1))===nb);
+          disp = isFinite(Rm)&&Rm<30 ? '0.000' : L ? (LEDC[L.props.color].vf+0.05).toFixed(3) : Dd ? ((DIODES[Dd.props.model]||DIODES['1N4001']).vf-0.12).toFixed(3) : 'OL'; } } }
     if(!plugged) sub=sub||'probe not touching';
     o.disp=disp; o.unit=unit; o.sub=sub; o.beep=cont;
     if(m==='C'&&cont&&!p._cont&&p.props.beep) beep(); p._cont=(m==='C'&&cont);
@@ -929,7 +961,7 @@ DEF.meter = { kind:'module', z:5, probe:true, name:'Digital multimeter', short:'
 };
 
 /* ================= analysis helpers ================= */
-const PNAME={resistor:'resistor',led:'LED',thermistor:'thermistor'};
+const PNAME={resistor:'resistor',led:'LED',thermistor:'thermistor',diode:'diode'};
 function legCheck(p,A){ const nm=PNAME[p.type];
   if(p.ends.some(a=>a.k==='f')){ A.warn('warn',`A leg of this ${nm} is not plugged into a hole.`); return; }
   if(nodeOf(p,0)===nodeOf(p,1)) A.warn('warn',`Both legs of this ${nm} are in the same connected strip, so current skips it. Move one leg to a different column.`); }
@@ -1195,6 +1227,7 @@ let flashTimer=null; function flash(msg){ sim.flashes=[{pid:null,msg}]; renderSt
 const ICON={
  resistor:`<line x1="2" y1="16" x2="50" y2="16" stroke="#9aa1a7" stroke-width="2"/><rect x="13" y="10" width="26" height="12" rx="5" fill="#e3c995" stroke="#9f8350"/><rect x="17" y="10" width="3" height="12" fill="#d22b2b"/><rect x="22" y="10" width="3" height="12" fill="#d22b2b"/><rect x="27" y="10" width="3" height="12" fill="#7a4a1d"/><rect x="34" y="10" width="2.5" height="12" fill="#c9a227"/>`,
  led:`<line x1="22" y1="18" x2="22" y2="31" stroke="#9aa1a7" stroke-width="2"/><line x1="30" y1="18" x2="30" y2="28" stroke="#9aa1a7" stroke-width="2"/><path d="M17,19 V10 A9,9 0 0 1 35,10 V19 Z" fill="#ff3b30" stroke="#8e1a14"/><rect x="15" y="18" width="22" height="3" rx="1" fill="#e0342a"/>`,
+ diode:`<line x1="2" y1="16" x2="50" y2="16" stroke="#9aa1a7" stroke-width="2"/><rect x="14" y="11" width="24" height="10" rx="2" fill="#1d1f22"/><rect x="32" y="11" width="3.5" height="10" fill="#c9ced3"/>`,
  thermistor:`<line x1="2" y1="16" x2="50" y2="16" stroke="#9aa1a7" stroke-width="2"/><ellipse cx="26" cy="16" rx="9" ry="7" fill="#1e1f22"/>`,
  slide:`<rect x="6" y="9" width="40" height="13" rx="2" fill="#2d3236"/><rect x="10" y="11" width="13" height="9" rx="1.5" fill="#e8e8e8"/><g fill="#9aa1a7"><rect x="12" y="22" width="3" height="6"/><rect x="24.5" y="22" width="3" height="6"/><rect x="37" y="22" width="3" height="6"/></g>`,
  micro:`<line x1="10" y1="9" x2="42" y2="3" stroke="#c4cbd1" stroke-width="2.5"/><rect x="8" y="9" width="36" height="16" rx="2" fill="#26292c"/><path d="M14,25 q-2,6 -6,7 M26,25 v7 M38,25 q2,6 6,7" stroke-width="2" fill="none" stroke="#d92f2f"/>`,
@@ -1209,7 +1242,7 @@ const ICON={
  batt:`<rect x="2" y="3" width="48" height="26" rx="4" fill="#111"/><rect x="5" y="6" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="27" y="6" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="5" y="17" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="27" y="17" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="20" y="6" width="5" height="9" fill="#c98a3c"/><rect x="27" y="17" width="5" height="9" fill="#c98a3c"/>`,
  ir:`<rect x="2" y="9" width="48" height="14" rx="7" fill="#26292c"/><rect x="8" y="6" width="36" height="20" rx="4" fill="#1b1d1f"/><circle cx="17" cy="16" r="6" fill="#3a1414"/><circle cx="35" cy="16" r="6" fill="#151b2e"/>`,
 };
-const BIN=[['Breadboard basics',['resistor','led','thermistor','slide','micro']],['Power',['psu','batt','reg']],['Controllers',['pico','driver']],['Motion & sensing',['servo','crservo','motor','ir']],['Test equipment',['meter']]];
+const BIN=[['Breadboard basics',['resistor','led','diode','thermistor','slide','micro']],['Power',['psu','batt','reg']],['Controllers',['pico','driver']],['Motion & sensing',['servo','crservo','motor','ir']],['Test equipment',['meter']]];
 function renderBin(){
   let h=`<h3>Wires</h3><div class="wirebox">Drag from one hole to another to draw a wire.<div class="swatches">${WIRES.map(w=>`<button class="sw${w[0]===wireColor?' on':''}" style="background:${w[0]}" data-wc="${w[0]}" title="${w[2]} wire"></button>`).join('')}</div></div>`;
   for(const [title,list] of BIN){ h+=`<h3>${title}</h3><div class="bin-group">${list.map(t=>`<div class="bin-item" data-type="${t}" title="${esc(DEF[t].name)}"><svg viewBox="0 0 52 32">${ICON[t]}</svg><span>${esc(DEF[t].short)}</span></div>`).join('')}</div>`; }
@@ -1291,7 +1324,7 @@ function endDrag(e){ const dd=drag; stage.style.cursor='';
   if(!dd.started){ drag=null;
     if(dd.mode==='body'){ const p=committed(dd.pid);
       if(dd.pressed){ p._pressed=false; commit(); return; }
-      if(dd.act&&dd.act.startsWith('mode:')&&p.type==='meter'){ pushHist(); p.props.mode=dd.act.slice(5); commit(); renderInspector(); return; }
+      if(dd.act&&dd.act.startsWith('mode:')&&p.type==='meter'){ pushHist(); p.props.mode=dd.act.slice(5); commit(); renderInspector(); if(p.props.mode==='C') contPrompt(); return; }
       if(dd.act==='power'&&p.type==='driver'){ pushHist(); p.props.on=!p.props.on; commit(); renderInspector(); return; }
       if(p.type==='slide'){ pushHist(); p.props.pos=p.props.pos?0:1; commit(); renderInspector(); return; } }
     if(dd.mode==='wire'){ select(null); startRoute(dd.a,[]); return; }
@@ -1375,7 +1408,7 @@ function applyProp(el){ const p=committed(sel); if(!p) return; let v=parseVal(el
 insp.addEventListener('input', e=>{ const el=e.target; if(el.id==='gpf') return; if(!el.dataset.prop) return; if(el.type==='number') return; applyProp(el); if(el.dataset.rebuild){ histArmed=false; renderInspector(); } });
 insp.addEventListener('change', e=>{ const el=e.target; if(el.id==='gpf'){ gpioFilter=el.checked; renderInspector(); return; } if(!el.dataset.prop) return; if(el.type==='number'){ applyProp(el); } histArmed=false; if(el.dataset.rebuild||el.dataset.prop==='ohms') renderInspector(); });
 insp.addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; const p=committed(sel); if(!p) return;
-  if(b.dataset.set){ pushHist(); let v=b.dataset.val; if(!isNaN(+v)&&v.trim()!=='') v=+v; setPath(p.props,b.dataset.set,v); commit(); renderInspector(); return; }
+  if(b.dataset.set){ pushHist(); let v=b.dataset.val; if(!isNaN(+v)&&v.trim()!=='') v=+v; setPath(p.props,b.dataset.set,v); commit(); renderInspector(); if(p.type==='meter'&&b.dataset.set==='mode'&&v==='C') contPrompt(); return; }
   if(b.dataset.servo){ pushHist(); const c=getPath(p.props,b.dataset.servo); c.f=50; c.d=7.5; commit(); renderInspector(); return; }
   if(b.dataset.trace){ traceGP(b.dataset.trace); return; }
   const a=b.dataset.act; if(a==='trace'){ traceFromPart(p.id); return; } if(a==='del') deletePart(p.id); else if(a==='rot') rotatePart(p.id); else if(a==='dup') duplicatePart(p.id); else if(a==='repair'){ pushHist(); p.props.burnt=false; commit(); renderInspector(); } });
@@ -1439,6 +1472,16 @@ const EX={
     const psu=mk('psu',{x:-120,y:-250,props:{volts:6}}); psu.ends=[T(drv.id,0),T(drv.id,1)]; const mot=mk('motor',{x:560,y:-300}); mot.ends=[T(drv.id,2),T(drv.id,3)];
     return [drv,psu,mot]; }},
 };
+// The class robot's power wiring: 6 V pack on the rails, slide switch, LD1117 3.3 V, diode into VSYS, indicator LED, Kitronik board from the rails.
+function robotPower(){ const bat=mk('batt',{x:-190,y:-110}); bat.ends=[H(2,0),H(2,1)];
+  const pc=mk('pico',{c:24,r:5,props:{usb:false,gpio:{}}}); const drv=mk('driver',{x:560,y:-330,props:{on:true,pico:{usb:false,gpio:{}}}});
+  const sw=mk('slide',{c:5,r:7,props:{pos:0}}), rg=mk('reg',{c:14,r:7});
+  const dio=mk('diode',{ends:[H(15,3),H(20,3)],props:{model:'1N4001'}});
+  const led=mk('led',{ends:[H(6,5),H(3,5)],props:{color:'red'}}), res=mk('resistor',{ends:[H(3,4),H(3,1)],props:{ohms:330}});
+  return {bat,pc,drv,sw,rg,dio,led,res,ws:[W(H(5,3),H(5,0),'#e23b3b'), W(H(6,4),H(16,4),'#f08a24'), W(H(14,3),H(14,1),'#262626'),
+    W(H(20,4),H(25,4),'#e23b3b'), W(H(26,3),H(26,1),'#262626'), W(T(drv.id,0),H(30,0),'#e23b3b'), W(T(drv.id,1),H(32,1),'#262626')]}; }
+const robotParts=o=>[o.bat,o.pc,o.drv,o.sw,o.rg,o.dio,o.led,o.res,...o.ws];
+EX.robot={name:'Robot power: 6 V pack, switch, 3.3 V regulator, diode into VSYS', build(){ return robotParts(robotPower()); }};
 function loadExample(key){ pushHist(); nextId=1; parts=EX[key].build(); sel=null; for(const k in anim) delete anim[k]; stateCache.clear(); renderInspector(); commit(); fitView(); }
 Object.assign(EX,{
   led5v:{name:'LED + resistor from a 5 V supply', build(){ const psu=mk('psu',{x:30,y:-170,props:{volts:5}}); psu.ends=[H(2,0),H(2,1)];
@@ -1475,7 +1518,7 @@ function servoClass(type){ const pico=mk('pico',{c:3,r:5,props:{usb:true,gpio:{}
 EX.servo15={name:'Continuous servo on GP15 + 6 V pack (class wiring)', build(){ return servoClass('crservo'); }};
 EX.servo15std={name:'Standard servo on GP15 + 6 V pack (class wiring)', build(){ return servoClass('servo'); }};
 EX.meter={name:'Multimeter measuring a voltage divider', build(){ const c=EX.divider.build(); const m=mk('meter',{x:330,y:-280}); m.ends=[H(7,3),H(13,1)]; return [...c,m]; }};
-const EX_GROUPS=[['Basics (no Pico)',['led5v','serpar','divider','meter','slidesel','ncno','reg']],['Pico',['blink','traffic','micro','therm','ir']],['Motors & servos',['servo15','servo15std','servo','servoext','crservo','motor','twomotor','limit']]];
+const EX_GROUPS=[['Basics (no Pico)',['led5v','serpar','divider','meter','slidesel','ncno','reg']],['Pico',['blink','traffic','micro','therm','ir']],['Motors & servos',['robot','servo15','servo15std','servo','servoext','crservo','motor','twomotor','limit']]];
 $('#selEx').innerHTML += EX_GROUPS.map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}">${esc(EX[k].name)}</option>`).join('')}</optgroup>`).join('');
 
 /* ================= strip view ================= */
@@ -1617,6 +1660,35 @@ Object.assign(STEPS,{
     {t:'Find the broken wire and delete it', f:()=> !parts.some(p=>p.type==='wire'&&p.props.broken) || 'One wire looks fine but is broken inside. Test each wire and delete the one that reads OL.'},
     {t:'Replace it and get the LED lit again', f:c=>{ if(!c.s) return 'The supply is missing.'; const ok=c.ser&&c.ser.ok&&SP(c.ser.L).b>0.05; return ok || 'Add a new wire where the broken one was, and plug the supply lead back in.'; }} ]},
 });
+Object.assign(STEPS,{
+  robot:{ ctx:()=>{ const c={b:ofType('batt')[0], sw:ofType('slide')[0], rg:ofType('reg')[0], dio:ofType('diode')[0], pc:picoP(), d:ofType('driver')[0]};
+      if(c.b){ c.src=NET(nodeOf(c.b,0)); c.gnd=NET(nodeOf(c.b,1)); } if(c.sw) c.swo=NET(nodeOf(c.sw,1)); if(c.rg){ c.vin=NET(nodeOf(c.rg,2)); c.out=NET(nodeOf(c.rg,1)); c.rgnd=NET(nodeOf(c.rg,0)); }
+      if(c.pc) c.vsys=pinNet(c.pc,39);
+      c.ledOn=()=>{ const s=c.swo!=null&&c.gnd!=null?findSeries(c.swo,c.gnd):null; return !!(s&&s.ok&&s.R&&SP(s.L).b>0.05); };
+      return c; }, steps:[
+    {t:'Battery pack on the rails', f:c=>{ if(!c.b) return 'The battery pack is missing. Press Restart.'; const [a,b]=c.b.ends;
+      if(onRail(a,[1,17])&&onRail(b,[0,16])) return 'The battery leads are swapped. Red goes on a + rail, black on a − rail.';
+      return (onRail(a,[0,16])&&onRail(b,[1,17])) || 'Plug the red battery lead into a + rail and the black lead into a − rail.'; }},
+    {t:'Kitronik board gets battery power', f:c=>{ if(!c.d) return 'The Kitronik board is missing. Press Restart.'; const tp=NET(`T${c.d.id}.0`), tn=NET(`T${c.d.id}.1`);
+      if(tp===c.gnd&&tn===c.src) return 'The Kitronik power wires are swapped. + rail to the + POWER terminal, − rail to −.';
+      return (tp===c.src&&tn===c.gnd) || 'The Kitronik board runs straight from the battery: + rail to its + POWER terminal and − rail to its − terminal.'; }},
+    {t:'Regulator makes 3.3 V from the switched supply', f:c=>{ if(!c.rg) return 'The regulator is missing. Press Restart.'; if(!c.sw) return 'The slide switch is missing. Press Restart.';
+      if(c.rgnd===c.swo||c.rgnd===c.src) return 'The regulator is the wrong way round: pin 1 (GND) is on the supply. Facing the text: 1 GND, 2 OUT, 3 IN.';
+      if(c.rgnd!==c.gnd) return 'Regulator pin 1 (GND, left leg) must go to the − rail.';
+      if(c.vin!==c.swo) return 'Regulator pin 3 (VIN, right leg) should come from the switch output (the middle pin of the slide switch).';
+      return SP(c.rg).st==='reg' || 'The regulator is not regulating. Is the switch on? VIN needs at least 4.4 V.'; }},
+    {t:'Diode points from the regulator to the Pico', f:c=>{ if(!c.dio) return 'The diode is missing. Press Restart.'; const a=NET(nodeOf(c.dio,0)), k=NET(nodeOf(c.dio,1));
+      if(a===c.vsys&&k===c.out) return 'The diode is backwards, so it blocks the 3.3 V from reaching the Pico. The grey band (cathode) must face the Pico\u2019s VSYS side. Swap its two ends.';
+      if(a!==c.out) return 'The diode\u2019s anode (plain end) should connect to the regulator\u2019s middle leg (VOUT).';
+      return k===c.vsys || 'The diode\u2019s band end should connect to VSYS (Pico pin 39, top row, second from the left).'; }},
+    {t:'Pico runs from VSYS', f:c=>{ if(!c.pc) return 'The Pico is missing. Press Restart.'; if(pinNet(c.pc,38)!==c.gnd&&gndNet(c.pc)!==c.gnd) return 'The Pico\u2019s GND is not joined to the − rail, so there is no return path. Wire a Pico GND pin to the − rail.';
+      return SP(c.pc).on || 'The Pico has no power. Follow the path: switch → regulator → diode → VSYS.'; }},
+    {t:'Indicator LED lights when the switch is on', f:c=>{ const s=c.swo!=null?findSeries(c.swo,c.gnd):null; if(!s) return 'The indicator LED should go from the switch output through a resistor to the − rail.';
+      if(s.noR) return 'The indicator LED has no series resistor.'; if(!s.ok) return 'The indicator LED is backwards. Its long leg (anode) goes to the switch output, the short leg to the resistor and the − rail.';
+      return SP(s.L).b>0.05 || 'The indicator LED is not lit yet.'; }},
+    {t:'Slide switch turns the Pico and indicator off', f:c=>{ const off=withTemp(()=>{ const o=c.sw.props.pos; c.sw.props.pos=o?0:1; return ()=>{ c.sw.props.pos=o; }; }, ()=>!SP(c.pc).on&&!c.ledOn());
+      return off || 'Sliding the switch should cut the power, but the Pico stays on. Power must go into an outer pin of the switch and come out of the middle pin. Check where the wire from the + rail lands, and look for any wire that skips the switch.'; }} ]},
+});
 function trackCont(ch){ const mm=meterOf(); if(!mm||mm.props.mode!=='C') return; const S=sim.parts[mm.id]||{}; if(S.disp==='LIVE') return; const a=nodeOf(mm,0), b=nodeOf(mm,1); if(a===b) return;
   if(parts.some(w=>w.type==='wire'&&((nodeOf(w,0)===a&&nodeOf(w,1)===b)||(nodeOf(w,0)===b&&nodeOf(w,1)===a)))){ ch.flags=ch.flags||{}; ch.flags.tested=true; } }
 const meterLoose = (x,y,mode) => mk('meter',{x,y,props:{mode}});
@@ -1669,6 +1741,12 @@ const CH=[
   {id:'f-rail', kind:'fix', lvl:'Beginner', title:'Dead rail', sol:'led5v', set:'first',
     goal:'The supply is on and the LED circuit looks right, but nothing lights. Work out where the power stops.',
     start(){ const c=EX.led5v.build(); c[0].ends=[H(2,16),H(2,17)]; return c; }},
+  {id:'r-diode', kind:'fix', lvl:'Intermediate', title:'The robot won\u2019t turn on', sol:'robot', set:'robot',
+    goal:'This is the robot\u2019s power wiring: 6 V pack → slide switch → LD1117 3.3 V regulator → diode → Pico VSYS, with the Kitronik board on the battery rails. The battery is fresh and the indicator is lit, but the Pico stays off. Find the fault and fix it.',
+    start(){ const o=robotPower(); o.dio.ends=[H(20,3),H(15,3)]; return robotParts(o); }},
+  {id:'r-two', kind:'fix', lvl:'Intermediate', title:'Two faults in the robot\u2019s power wiring', sol:'robot', set:'robot',
+    goal:'Same robot power circuit, two faults this time. The indicator LED never lights, and the switch does not turn the robot off. Find and fix both.',
+    start(){ const o=robotPower(); o.led.ends=[H(3,5),H(6,5)]; o.ws[0].ends=[H(6,3),H(6,0)]; return robotParts(o); }},
   {id:'f-float', kind:'fix', lvl:'Intermediate', title:'The switch reads random values', sol:'micro', set:'switch',
     goal:'GP14 should read HIGH until the micro switch is pressed, but at rest it reads "floating". Fix it.',
     start(){ const c=EX.micro.build(); c[0].props.gpio.GP14={m:'in'}; return c; }},
@@ -1687,48 +1765,56 @@ function evalChal(def){ const set=STEPS[def.set]; let c={}; try{ c=set.ctx()||{}
   for(const st of set.steps){ if(failed){ out.push({t:st.t,st:'todo'}); continue; } let r; try{ r=st.f(c); }catch(e){ r=false; }
     if(r===true) out.push({t:st.t,st:'pass'}); else { failed=true; out.push({t:st.t,st:'fail',hint:typeof r==='string'?r:'Not yet. Check this step.'}); } }
   return out; }
-function runCheck(){ if(!chal||!chal.def) return; chal.res=evalChal(chal.def); chal.checked=true; chal.won=chal.res.every(r=>r.st==='pass');
-  if(chal.won&&!chal.usedSol&&!doneSet.has(chal.def.id)){ doneSet.add(chal.def.id); saveDone(); } renderCard(); }
-function startChallenge(id){ const def=CH.find(c=>c.id===id); pushHist(); nextId=1; parts=def.start(); sel=null; stateCache.clear(); for(const k in anim) delete anim[k];
+function runCheck(explicit){ if(!chal||!chal.def) return; chal.res=evalChal(chal.def); chal.checked=true; chal.won=chal.res.every(r=>r.st==='pass');
+  if(chal.won&&!chal.usedSol&&!doneSet.has(chal.def.id)){ doneSet.add(chal.def.id); saveDone(); } if(!chal.usedSol) hwRecord(explicit); renderCard(); }
+function startChallenge(id){ const def=CH.find(c=>c.id===id); pushHist(); nextId=1; parts=def.start(); sel=null;
+  if(hw&&hw.st&&id==='gp15'){ const pc=parts.find(p=>p.type==='pico'); if(pc) pc.props.gpio.GP15={m:'out1'}; } stateCache.clear(); for(const k in anim) delete anim[k];
   chal={def,res:null,checked:false,usedSol:false,min:false,flags:{}}; renderInspector(); commit(); fitView(); renderCard(); }
 function renderCard(){ const el=$('#chcard'); if(!chal){ el.hidden=true; return; } el.hidden=false; el.classList.toggle('min',!!chal.min);
   if(chal.min){ el.innerHTML=`<div class="ch-head"><button class="linkbtn" data-cha="max">${chal.def?esc(chal.def.title):'Challenges'}${chal.res?` · ${chal.res.filter(r=>r.st==='pass').length}/${chal.res.length}`:''}</button><button class="iconbtn" data-cha="max" aria-label="Expand">▾</button></div>`; return; }
+  if(chal.mode==='make'){ el.innerHTML=hwMakeHTML(); return; }
+  if(chal.mode==='verify'){ el.innerHTML=hwVerifyHTML(); return; }
+  if(!chal.def&&hw&&hw.st){ el.innerHTML=hwListHTML(); return; }
   if(!chal.def){ const item=c=>`<button class="ch-item" data-chs="${c.id}"><span class="tick${doneSet.has(c.id)?' done':''}">${doneSet.has(c.id)?'✓':''}</span><span>${esc(c.title)}</span><span class="lvl">${c.lvl}</span></button>`;
     el.innerHTML=`<div class="ch-head"><h3>Wiring challenges</h3><button class="iconbtn" data-cha="close" aria-label="Close">✕</button></div>
       <p class="ch-goal note">Pick a task. Wire it any way you like, then press Check. The checker tests the electrical result, so any correct layout passes.</p>
       <div class="ch-sec">Build it</div><div class="ch-list">${CH.filter(c=>c.kind==='build').map(item).join('')}</div>
       <div class="ch-sec">Fix the fault</div><div class="ch-list">${CH.filter(c=>c.kind==='fix').map(item).join('')}</div>
       <div class="ch-sec">Measure it</div><div class="ch-list">${CH.filter(c=>c.kind==='measure').map(item).join('')}</div>
-      <p class="note">${doneSet.size} of ${CH.length} completed. Progress saves in this browser.</p>`; return; }
-  const d=chal.def, res=chal.res||STEPS[d.set].steps.map(s=>({t:s.t,st:''}));
-  const next=CH[CH.indexOf(d)+1];
-  el.innerHTML=`<div class="ch-head"><button class="linkbtn" data-cha="list">‹ All challenges</button><span><button class="iconbtn" data-cha="min" aria-label="Minimise">▴</button><button class="iconbtn" data-cha="close" aria-label="Close">✕</button></span></div>
+      <p class="note">${doneSet.size} of ${CH.length} completed. Progress saves in this browser.</p>
+      <div class="hw-tools"><button class="btn" data-cha="make">Create an assignment</button><button class="btn" data-cha="verify">Check a completion code</button></div>`; return; }
+  const d=chal.def, res=chal.res||STEPS[d.set].steps.map(s=>({t:s.t,st:''})), inHw=!!(hw&&hw.st&&hw.list.includes(d.id));
+  const next=inHw ? (()=>{ const o=hw.st.order, i=o.indexOf(d.id); const n=[...o.slice(i+1),...o.slice(0,i)].find(x=>!hw.st.items[x].done); return n?{id:n}:null; })() : CH[CH.indexOf(d)+1];
+  el.innerHTML=`<div class="ch-head"><button class="linkbtn" data-cha="list">${inHw?'‹ Assignment':'‹ All challenges'}</button><span><button class="iconbtn" data-cha="min" aria-label="Minimise">▴</button><button class="iconbtn" data-cha="close" aria-label="Close">✕</button></span></div>
     <span class="kind ${d.kind}">${d.kind==='fix'?'Fix the fault':d.kind==='measure'?'Measure it':'Build it'} · ${d.lvl}</span>
     <h3 style="margin:-4px 0 0;font-size:15px">${esc(d.title)}</h3><p class="ch-goal">${esc(d.goal)}</p>
     <ol class="steps">${res.map(r=>`<li class="${r.st}"><span>${esc(r.t)}</span>${r.hint?`<div class="ch-hint">${esc(r.hint)}</div>`:''}</li>`).join('')}</ol>
     ${STEPS[d.set].steps.some(x=>x.ask)?`<label class="ch-ask">Meter reading <input type="text" id="chAns" inputmode="decimal" autocomplete="off" placeholder="e.g. 4.50" value="${esc(chal.answer||'')}"></label>`:''}
     ${chal.won?`<div class="ch-win">${chal.usedSol?'This is a working solution. Press Restart and build it yourself to earn the tick.':'Challenge complete. Every check passed.'}</div>`:''}
     <div class="ch-acts"><button class="btn primary" data-cha="check">${chal.checked?'Check again':'Check my wiring'}</button>
-      ${chal.won&&next?`<button class="btn" data-chs="${next.id}">Next challenge</button>`:''}
-      <button class="btn" data-cha="restart">${d.kind==='measure'?'New values':'Restart'}</button>${d.sol?'<button class="btn" data-cha="sol">Show a solution</button>':''}</div>
+      ${chal.won&&next?(inHw?`<button class="btn" data-hwopen="${next.id}">Next challenge</button>`:`<button class="btn" data-chs="${next.id}">Next challenge</button>`):''}
+      <button class="btn" data-cha="restart">${d.kind==='measure'?'New values':'Restart'}</button>${d.sol&&!inHw?'<button class="btn" data-cha="sol">Show a solution</button>':''}</div>
     ${chal.checked&&!chal.won?'<p class="note">Checks re-run each time you change the circuit.</p>':''}`; }
-$('#chcard').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return;
+$('#chcard').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||b.dataset.hw||b.dataset.hwopen) return;
   if(b.dataset.chs){ startChallenge(b.dataset.chs); return; }
   const a=b.dataset.cha;
   if(a==='close') chal=null; else if(a==='list') chal={min:false}; else if(a==='min') chal.min=true; else if(a==='max') chal.min=false;
-  else if(a==='check'){ runCheck(); return; } else if(a==='restart'){ startChallenge(chal.def.id); return; }
+  else if(a==='make'||a==='verify') chal={min:false,mode:a};
+  else if(a==='check'){ runCheck(true); return; } else if(a==='restart'){ startChallenge(chal.def.id); return; }
   else if(a==='sol'){ const def=chal.def; chal=null; loadExample(def.sol); chal={def,res:null,checked:false,usedSol:true,min:false}; runCheck(); return; }
   renderCard(); });
-$('#chcard').addEventListener('change', e=>{ if(e.target.id==='chAns'&&chal&&chal.def){ chal.answer=e.target.value; runCheck(); const i=$('#chAns'); if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length); } } });
+$('#chcard').addEventListener('change', e=>{ if(e.target.id==='chAns'&&chal&&chal.def){ chal.answer=e.target.value; runCheck(true); const i=$('#chAns'); if(i){ i.focus(); i.setSelectionRange(i.value.length,i.value.length); } } });
 $('#chcard').addEventListener('keydown', e=>{ if(e.target.id==='chAns') e.stopPropagation(); });
 $('#bCh').onclick=()=>{ if(chal&&!chal.min){ chal=null; } else if(chal){ chal.min=false; } else { chal={min:false}; } renderCard(); };
-$('#selEx').onchange=e=>{ if(e.target.value) loadExample(e.target.value); e.target.value=''; };
+$('#selEx').onchange=e=>{ const v=e.target.value; e.target.value=''; if(!v) return;
+  if(hw&&hw.st&&chal&&chal.def&&hw.list.includes(chal.def.id)){ alertModal('Examples are turned off while you work on an assignment challenge. Go back to the assignment list first.'); return; }
+  loadExample(v); };
 
 /* ================= schematic ================= */
 let paneTab=null, schV=true;
 try{ const t=localStorage.getItem('pico-bb-lab-pane'); paneTab = t==='sch'||t==='code'||t==='check' ? t : (localStorage.getItem('pico-bb-lab-sch')==='1'?'sch':null); }catch(e){}
-const DESIG={resistor:'R',led:'D',thermistor:'TH',motor:'M',psu:'BT',pico:'U',driver:'U',reg:'U',servo:'SV',crservo:'SV',ir:'IR',micro:'SW',slide:'SW',batt:'BT'};
-const TWO=new Set(['resistor','led','thermistor','motor','psu','batt']);
+const DESIG={resistor:'R',led:'D',diode:'D',thermistor:'TH',motor:'M',psu:'BT',pico:'U',driver:'U',reg:'U',servo:'SV',crservo:'SV',ir:'IR',micro:'SW',slide:'SW',batt:'BT'};
+const TWO=new Set(['resistor','led','diode','thermistor','motor','psu','batt']);
 const srcVolts=p=>p.type==='batt'?1.5*p.props.cells:+p.props.volts;
 const DRV_PINS=['VIN+','VIN−','M1A','M1B','M2A','M2B','3V','GND','GP0','GP1','GP27','GP26'];
 const BLK_TITLE={pico:'Pico 2 WH',driver:'Kitronik driver',reg:'LD1117-3.3',servo:'SG-5010 servo',crservo:'360° servo',ir:'IR distance',micro:'Micro switch',slide:'Slide switch'};
@@ -1795,6 +1881,10 @@ function schSym(e,x,y,flip,des){ const p=e.p, t=p.type, S=sim.parts[p.id]||{}; l
     if(!flip) s+=`<line x1="${x}" y1="${y+14}" x2="${x}" y2="${y+18}" class="sw"/><path d="M${x-9},${y+18} h18 L${x},${y+34} Z" class="sw" ${fill}/><path d="M${x-9},${y+34} h18 M${x},${y+34} V${y+42}" class="sw"/>`;
     else s+=`<path d="M${x},${y+14} V${y+22} M${x-9},${y+22} h18" class="sw"/><path d="M${x-9},${y+38} h18 L${x},${y+22} Z" class="sw" ${fill}/><line x1="${x}" y1="${y+38}" x2="${x}" y2="${y+42}" class="sw"/>`;
     s+=`<path d="M${x+11},${y+24} l7,-5 m-3,0 h3 v3 M${x+11},${y+31} l7,-5 m-3,0 h3 v3" class="sw" style="stroke-width:1.1"/>`; val=p.props.burnt?'burnt':p.props.color+(flip?' (reversed!)':''); }
+  else if(t==='diode'){ const fill=(S.on?'fill="currentColor" fill-opacity=".25"':'fill="none"');
+    if(!flip) s+=`<line x1="${x}" y1="${y+14}" x2="${x}" y2="${y+18}" class="sw"/><path d="M${x-9},${y+18} h18 L${x},${y+34} Z" class="sw" ${fill}/><path d="M${x-9},${y+34} h18 M${x},${y+34} V${y+42}" class="sw"/>`;
+    else s+=`<path d="M${x},${y+14} V${y+22} M${x-9},${y+22} h18" class="sw"/><path d="M${x-9},${y+38} h18 L${x},${y+22} Z" class="sw" ${fill}/><line x1="${x}" y1="${y+38}" x2="${x}" y2="${y+42}" class="sw"/>`;
+    val=p.props.model+(flip?' (reversed!)':''); }
   else if(t==='motor'){ s+=`<circle cx="${x}" cy="${y+28}" r="13" class="sw"/><text x="${x}" y="${y+32}" text-anchor="middle" font-weight="700">M</text>`; val=S.badge&&S.badge!=='stopped'?S.badge:''; }
   else if(t==='psu'||t==='batt'){ const pl=(yy,w,th)=>`<line x1="${x-w/2}" y1="${yy}" x2="${x+w/2}" y2="${yy}" class="sw" style="stroke-width:${th}"/>`;
     s+=`<line x1="${x}" y1="${y+14}" x2="${x}" y2="${y+24}" class="sw"/><line x1="${x}" y1="${y+32}" x2="${x}" y2="${y+42}" class="sw"/>`+(!flip? pl(y+24,26,1.6)+pl(y+32,13,3.2) : pl(y+24,13,3.2)+pl(y+32,26,1.6));
@@ -2462,7 +2552,7 @@ function codePins(src){ const out=[];
   return out; }
 
 function designators(){ const des={}, cnt={}; for(const p of parts){ const pre=DESIG[p.type]; if(!pre) continue; cnt[pre]=(cnt[pre]||0)+1; des[p.id]=pre+cnt[pre]; } return des; }
-function partLabel(p,des){ const nm=p.type==='led'?`${p.props.color} LED`:p.type==='resistor'?`${fmtOhm(p.props.ohms)} resistor`:{servo:'servo',crservo:'continuous servo',micro:'micro switch',slide:'slide switch',thermistor:'thermistor',ir:'IR sensor',motor:'motor',reg:'regulator',psu:'power supply',batt:'battery pack',pico:'Pico',driver:'Kitronik board'}[p.type]||DEF[p.type].short;
+function partLabel(p,des){ const nm=p.type==='led'?`${p.props.color} LED`:p.type==='resistor'?`${fmtOhm(p.props.ohms)} resistor`:{diode:'diode',servo:'servo',crservo:'continuous servo',micro:'micro switch',slide:'slide switch',thermistor:'thermistor',ir:'IR sensor',motor:'motor',reg:'regulator',psu:'power supply',batt:'battery pack',pico:'Pico',driver:'Kitronik board'}[p.type]||DEF[p.type].short;
   return des&&des[p.id]?`${nm} (${des[p.id]})`:nm; }
 /* Nets joined by jumper wires only, so a closed switch still counts as a part between two nets. */
 function wireNetFn(){ const up=new Map(), f=k=>{ while(up.has(k)&&up.get(k)!==k) k=up.get(k); return k; }, u=(a,b)=>{ a=f(a); b=f(b); if(a!==b) up.set(a,b); };
@@ -2650,7 +2740,7 @@ function walkFrom(startNet,pc,WN,pn){ const visited=new Set([startNet]), pids=ne
   for(let depth=0;depth<6&&frontier.length;depth++){ const next=[], lvl=[];
     for(const net of frontier){ if(pn.gnd.has(net)){ end='GND'; continue; } if(pn.pwr.has(net)&&net!==startNet){ end=end||'power'; continue; }
       for(const {p,i} of att.get(net)||[]){ if(pids.has(p.id)) continue; pids.add(p.id); lvl.push(p);
-        if(['resistor','led','thermistor','motor'].includes(p.type)){ const o=WN(nodeOf(p,1-i)); if(!visited.has(o)){ visited.add(o); next.push(o); } } } }
+        if(['resistor','led','diode','thermistor','motor'].includes(p.type)){ const o=WN(nodeOf(p,1-i)); if(!visited.has(o)){ visited.add(o); next.push(o); } } } }
     if(lvl.length) levels.push(lvl); frontier=next; }
   for(const w of parts) if(w.type==='wire'&&w.ends.some((_,i)=>visited.has(WN(nodeOf(w,i))))) pids.add(w.id);
   return {pids,levels,end,visited}; }
@@ -2830,6 +2920,158 @@ edT.addEventListener('keydown',e=>{
 edT.addEventListener('input',e=>{ const ch=(e.data||''); if(/[A-Za-z_.]/.test(ch)) acShow(false); else acHide(); });
 edT.addEventListener('blur',()=>setTimeout(acHide,150)); edT.addEventListener('click',acHide);
 
+/* ================= assignments: homework links, saved progress, completion card ================= */
+const HW_SALT='wne-fy-breadboard-2026', HW_DEFAULT=['first','f-strip','f-back','f-rail','m-volt','m-ohm','m-cont','gp15','r-diode','r-two'];
+const b64u=s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64u=s=>{ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; return decodeURIComponent(escape(atob(s))); };
+const fnv=str=>{ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return h>>>0; };
+const B32='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+function b32enc(bytes){ let bits=0, val=0, out=''; for(const b of bytes){ val=(val<<8)|b; bits+=8; while(bits>=5){ out+=B32[(val>>>(bits-5))&31]; bits-=5; } } if(bits) out+=B32[(val<<(5-bits))&31]; return out; }
+function b32dec(s){ s=s.toUpperCase().replace(/[^0-9A-Z]/g,'').replace(/O/g,'0').replace(/[IL]/g,'1'); let bits=0, val=0; const out=[]; for(const ch of s){ const i=B32.indexOf(ch); if(i<0) return null; val=(val<<5)|i; bits+=5; if(bits>=8){ out.push((val>>>(bits-8))&255); bits-=8; } } return out; }
+let hw=null;
+const hwKey=id=>'pico-bb-lab-hw-'+id;
+function hwSave(){ if(!hw||!hw.st) return; try{ localStorage.setItem(hwKey(hw.id),JSON.stringify(hw.st)); }catch(e){} }
+function hwParse(){ const m=location.hash.match(/^#hw-([A-Za-z0-9_-]+)$/); if(!m) return null;
+  try{ const o=JSON.parse(unb64u(m[1])); const list=[...new Set((o.c||[]).filter(id=>CH.some(c=>c.id===id)))]; if(!list.length) return null;
+    return {id:fnv(m[1]).toString(36), title:String(o.t||'Breadboarding homework').slice(0,80), list}; }catch(e){ return null; } }
+const shuffle=a=>{ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const fmtDur=ms=>{ const m=Math.round(ms/60000); return m<1?'< 1 min':m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min'; };
+const chTitle=id=>(CH.find(c=>c.id===id)||{}).title||id;
+const hwDoneN=()=>hw.list.filter(id=>hw.st.items[id]&&hw.st.items[id].done).length;
+function showModal(html){ $('#modalBox').innerHTML=html; $('#modal').hidden=false; }
+function hideModal(){ $('#modal').hidden=true; }
+
+function hwBoot(){ const a=hwParse(); if(!a){ return; } let st=null; try{ st=JSON.parse(localStorage.getItem(hwKey(a.id))||'null'); }catch(e){}
+  hw={...a,st:st&&st.name?st:null};
+  const list=`<ol class="hw-l">${a.list.map(id=>`<li>${esc(chTitle(id))}</li>`).join('')}</ol>`;
+  if(hw.st) showModal(`<h2>${esc(a.title)}</h2><p>Welcome back, <b>${esc(hw.st.name)}</b>. You have finished ${hwDoneN()} of ${a.list.length} challenges.</p>
+    <div class="hw-acts"><button class="btn primary" data-hw="continue">Continue</button><button class="btn" data-hw="restart-all">Start over</button></div>`);
+  else showModal(`<h2>${esc(a.title)}</h2><p>${a.list.length} challenges, in any order. Your progress saves in this browser, so you can stop and come back. Attempts are unlimited.</p>${list}
+    <label class="hw-name">Your full name <input id="hwName" type="text" autocomplete="name" maxlength="60" placeholder="First and last name"></label>
+    <div class="hw-acts"><button class="btn primary" data-hw="start">Start</button><button class="btn" data-hw="load">Continue from a progress file</button></div>`); }
+function hwStart(name){ const items={}; hw.list.forEach(id=>items[id]={done:false,time:0,attempts:0,mistakes:{}});
+  hw.st={name,order:shuffle(hw.list),items,cur:null,startedAt:Date.now(),finishedAt:null}; hwSave(); hideModal(); chal={min:false}; renderCard(); }
+function hwOpen(id){ const it=hw.st.items[id]; hw.st.cur=id; hwSave(); startChallenge(id); if(id==='m-cont') contPrompt(); }
+function hwRecord(explicit){ if(!hw||!hw.st||!chal||!chal.def) return; const it=hw.st.items[chal.def.id]; if(!it||it.done) return;
+  if(chal.won){ it.attempts++; it.done=true; it.completedAt=Date.now(); hwSave(); if(hw.list.every(x=>hw.st.items[x].done)){ hw.st.finishedAt=hw.st.finishedAt||Date.now(); hwSave(); setTimeout(showCompletion,700); } }
+  else if(explicit){ it.attempts++; const f=(chal.res||[]).find(r=>r.st==='fail'); if(f) it.mistakes[f.t]=(it.mistakes[f.t]||0)+1; hwSave(); } }
+let hwLastAct=Date.now(), hwTickN=0;
+['pointerdown','keydown','pointermove','wheel'].forEach(ev=>window.addEventListener(ev,()=>{ hwLastAct=Date.now(); },{passive:true}));
+setInterval(()=>{ if(!hw||!hw.st||!chal||!chal.def) return; const it=hw.st.items[chal.def.id]; if(!it||it.done||document.hidden||Date.now()-hwLastAct>120000) return;
+  it.time+=1000; if(++hwTickN%5===0) hwSave(); },1000);
+function hwSaveFile(){ const data=JSON.stringify({v:1,hwId:hw.id,title:hw.title,list:hw.list,st:hw.st}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'})); a.download=`${hw.title.replace(/[^\w]+/g,'-')}-${(hw.st.name||'student').replace(/[^\w]+/g,'-')}.json`; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000); }
+function hwLoadFile(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=()=>{ const f=inp.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result);
+      if(o.hwId!==hw.id&&JSON.stringify(o.list)!==JSON.stringify(hw.list)){ alertModal('That progress file is for a different assignment.'); return; }
+      hw.st=o.st; hwSave(); hideModal(); chal={min:false}; renderCard(); }catch(e){ alertModal("That file isn't a progress file from this simulator."); } }; r.readAsText(f); }; inp.click(); }
+function alertModal(msg){ showModal(`<p>${esc(msg)}</p><div class="hw-acts"><button class="btn primary" data-hw="close">OK</button></div>`); }
+
+/* card views */
+function hwListHTML(){ const n=hwDoneN(), N=hw.list.length, tot=hw.list.reduce((s,id)=>s+(hw.st.items[id].time||0),0);
+  return `<div class="ch-head"><h3>${esc(hw.title)}</h3><button class="iconbtn" data-cha="min" aria-label="Minimise">▴</button></div>
+    <p class="ch-goal note">${esc(hw.st.name)} · ${n} of ${N} done · ${fmtDur(tot)} so far</p>
+    <div class="hw-bar"><i style="width:${Math.round(n/N*100)}%"></i></div>
+    <div class="ch-list">${hw.st.order.map(id=>{ const it=hw.st.items[id]; return `<button class="ch-item" data-hwopen="${id}"><span class="tick${it.done?' done':''}">${it.done?'✓':''}</span><span>${esc(chTitle(id))}</span><span class="lvl">${it.done?fmtDur(it.time):it.attempts?it.attempts+' tries':''}</span></button>`; }).join('')}</div>
+    ${n===N?'<button class="btn primary" data-hw="card">Show my completion card</button>':''}
+    <div class="ch-acts"><button class="btn" data-hw="save">Save progress file</button><button class="btn" data-hw="load">Continue from file</button></div>
+    <p class="note">Progress saves in this browser automatically. Use "Save progress file" to move to another computer.</p>`; }
+function hwMakeHTML(){ const sel=new Set(chal.pick||HW_DEFAULT); const row=c=>`<label class="hw-pick"><input type="checkbox" data-pick="${c.id}" ${sel.has(c.id)?'checked':''}> ${esc(c.title)}</label>`;
+  return `<div class="ch-head"><button class="linkbtn" data-cha="list">‹ All challenges</button><button class="iconbtn" data-cha="close" aria-label="Close">✕</button></div>
+    <h3 style="margin:0;font-size:15px">Create an assignment</h3>
+    <label class="hw-name">Assignment name <input id="hwTitle" type="text" maxlength="80" value="${esc(chal.title||'Breadboarding homework')}"></label>
+    <div class="ch-sec">Build it</div>${CH.filter(c=>c.kind==='build').map(row).join('')}
+    <div class="ch-sec">Fix the fault</div>${CH.filter(c=>c.kind==='fix').map(row).join('')}
+    <div class="ch-sec">Measure it</div>${CH.filter(c=>c.kind==='measure').map(row).join('')}
+    <div class="ch-acts"><button class="btn primary" data-hw="make">Create link</button></div>
+    ${chal.link?`<input class="hw-link" id="hwLink" readonly value="${esc(chal.link)}"><div class="ch-acts"><button class="btn" data-hw="copy">Copy link</button><a class="btn" href="${esc(chal.link)}" target="_blank" rel="noopener">Open it</a></div>
+      <p class="note">Post this link on Canvas. Each student types their name, does the challenges in a random order, and uploads the completion card image.</p>`:''}`; }
+function hwVerifyHTML(){ return `<div class="ch-head"><button class="linkbtn" data-cha="list">‹ All challenges</button><button class="iconbtn" data-cha="close" aria-label="Close">✕</button></div>
+    <h3 style="margin:0;font-size:15px">Check a completion code</h3>
+    <label class="hw-name">Student name, as on the card <input id="vName" type="text" value="${esc(chal.vName||'')}"></label>
+    <label class="hw-name">Verification code <input id="vCode" type="text" value="${esc(chal.vCode||'')}" style="font-family:var(--font-mono)"></label>
+    <label class="hw-name">Assignment link (optional, adds challenge names) <input id="vLink" type="text" value="${esc(chal.vLink||'')}"></label>
+    <div class="ch-acts"><button class="btn primary" data-hw="verify">Check</button></div>${chal.vOut||''}`; }
+
+/* verification code: date, total minutes and attempts per challenge, sealed with a checksum of the name and assignment */
+function hwCode(){ const day=Math.max(0,Math.floor((hw.st.finishedAt-Date.UTC(2026,0,1))/864e5)), mins=Math.min(65535,Math.round(hw.list.reduce((s,id)=>s+hw.st.items[id].time,0)/60000));
+  const body=[1,day>>8&255,day&255,mins>>8&255,mins&255,hw.list.length,...hw.list.map(id=>Math.min(255,hw.st.items[id].attempts))];
+  const chk=fnv(hw.st.name.trim().toLowerCase()+'|'+hw.id+'|'+body.join(',')+'|'+HW_SALT);
+  return b32enc([...body,chk>>16&255,chk>>8&255,chk&255]).replace(/(.{4})(?=.)/g,'$1-'); }
+function hwVerify(name,code,link){ const b=b32dec(code||''); if(!b||b.length<9||b[0]!==1) return {ok:false,msg:'That code is not in the right format.'};
+  const n=b[5], body=b.slice(0,6+n), chk=b.slice(6+n,9+n); if(chk.length<3) return {ok:false,msg:'That code is too short.'};
+  let id=null, list=null; if(link){ const m=String(link).match(/#hw-([A-Za-z0-9_-]+)/); if(m){ id=fnv(m[1]).toString(36); try{ list=JSON.parse(unb64u(m[1])).c; }catch(e){} } }
+  if(!id&&hw) { id=hw.id; list=hw.list; }
+  if(!id) return {ok:false,msg:'Paste the assignment link too, so the code can be checked.'};
+  const c=fnv(String(name||'').trim().toLowerCase()+'|'+id+'|'+body.join(',')+'|'+HW_SALT);
+  if((c>>16&255)!==chk[0]||(c>>8&255)!==chk[1]||(c&255)!==chk[2]) return {ok:false,msg:'Not valid for that name and assignment. The card may have been edited, or the name is spelled differently.'};
+  const d=new Date(Date.UTC(2026,0,1)+((b[1]<<8)|b[2])*864e5), mins=(b[3]<<8)|b[4];
+  return {ok:true,date:d.toISOString().slice(0,10),mins,attempts:b.slice(6,6+n),list}; }
+
+/* completion card as one image */
+const MISTAKE_LABELS=[[/faces the right way|backwards/i,'LED direction'],[/150 Ω and 1 kΩ/,'resistor value'],[/LED is lit/,'LED not lighting'],[/one path from \+ to −|→ resistor → LED → GND/,'complete circuit path'],
+  [/Red lead on a \+ rail|leads on the rails|Battery pack on the rails/i,'supply leads on the rails'],[/Supply set to/,'supply voltage'],[/Meter set to/,'meter mode'],[/probe/i,'probe placement'],[/Type the/,'reading the meter'],
+  [/Test a wire/,'power off before continuity'],[/broken wire/,'finding the broken wire'],[/Diode points/,'diode direction'],[/switch turns/i,'switch in the power path'],[/Pico runs/,'Pico power and ground'],
+  [/Regulator makes/,'regulator wiring'],[/Kitronik board gets/,'motor board power'],[/Indicator LED/,'indicator LED'],[/GP15 is set|Pico is powered/,'Pico setup'],[/stays under 12 mA/,'GPIO current']];
+const mistakeLabel=t=>{ for(const [re,l] of MISTAKE_LABELS) if(re.test(t)) return l; return t.replace(/\.$/,''); };
+function cardCanvas(){ const N=hw.list.length, W=980, rowH=46, H=372+N*rowH, c=document.createElement('canvas'); c.width=W*2; c.height=H*2; const g=c.getContext('2d'); g.scale(2,2);
+  const tot=hw.list.reduce((s,id)=>s+hw.st.items[id].time,0), done=new Date(hw.st.finishedAt), font=(w,s)=>`${w} ${s}px Archivo, "Segoe UI", system-ui, sans-serif`;
+  const fit=(t,w)=>{ if(g.measureText(t).width<=w) return t; while(t.length>3&&g.measureText(t+'…').width>w) t=t.slice(0,-1); return t+'…'; };
+  g.fillStyle='#ffffff'; g.fillRect(0,0,W,H); g.fillStyle='#0e7468'; g.fillRect(0,0,W,86);
+  g.fillStyle='#d5ece8'; g.font=font(600,14); g.fillText('BREADBOARD SIMULATOR · ASSIGNMENT COMPLETE',32,32);
+  g.fillStyle='#ffffff'; g.font=font(700,26); g.fillText(fit(hw.title,W-64),32,66);
+  g.fillStyle='#17201e'; g.font=font(700,20); g.fillText(fit(hw.st.name,560),32,126);
+  g.font=font(400,15); g.fillStyle='#5b6a66'; g.fillText(`Completed ${done.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}, ${done.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}`,32,152);
+  g.textAlign='right'; g.fillStyle='#17201e'; g.font=font(700,30); g.fillText(fmtDur(tot),W-32,128); g.font=font(400,13); g.fillStyle='#5b6a66'; g.fillText('active time',W-32,150);
+  g.fillText(`${N} of ${N} challenges`,W-32,170); g.textAlign='left';
+  const cols=[32,470,560,650], top=200; g.fillStyle='#f1f5f4'; g.fillRect(20,top-24,W-40,36); g.fillStyle='#5b6a66'; g.font=font(600,12.5);
+  ['CHALLENGE','TIME','ATTEMPTS','HOW IT WENT'].forEach((h,i)=>g.fillText(h,cols[i],top));
+  const allMist={};
+  hw.list.forEach((id,i)=>{ const it=hw.st.items[id], y=top+30+i*rowH; if(i%2){ g.fillStyle='#fafcfb'; g.fillRect(20,y-26,W-40,rowH); }
+    const ms=Object.entries(it.mistakes).map(([t,n])=>[mistakeLabel(t),n]); const agg={}; for(const [l,n] of ms){ agg[l]=(agg[l]||0)+n; allMist[l]=(allMist[l]||0)+n; }
+    const note = it.attempts<=1 ? 'First try' : Object.keys(agg).length ? 'Fixed: '+Object.entries(agg).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([l,n])=>l+(n>1?` ×${n}`:'')).join(', ') : `Solved after ${it.attempts} checks`;
+    g.fillStyle='#17201e'; g.font=font(600,15); g.fillText(fit(`${i+1}. ${chTitle(id)}`,425),cols[0],y); g.font=font(400,15); g.fillText(fmtDur(it.time),cols[1],y); g.fillText(String(it.attempts),cols[2],y+0);
+    g.fillStyle=it.attempts<=1?'#167a3c':'#a85d06'; g.fillText(fit((it.attempts<=1?'✓ ':'✓ ')+note,W-cols[3]-32),cols[3],y); });
+  let y=top+30+N*rowH+18; g.fillStyle='#d3dcd9'; g.fillRect(20,y-18,W-40,1);
+  const first=hw.list.filter(id=>hw.st.items[id].attempts<=1).map(id=>{ const t=chTitle(id); return t.length>34?t.slice(0,33)+'…':t; });
+  const watch=Object.entries(allMist).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([l,n])=>l+(n>1?` (${n}×)`:''));
+  g.font=font(700,14); g.fillStyle='#167a3c'; g.fillText('Strengths',32,y+6); g.font=font(400,14); g.fillStyle='#17201e'; g.fillText(fit(first.length?`First try on ${first.length} of ${N}: `+first.slice(0,3).join('; ')+(first.length>3?'…':''):'Kept going until every challenge passed.',W-160),150,y+6);
+  g.font=font(700,14); g.fillStyle='#a85d06'; g.fillText('Watch for',32,y+34); g.font=font(400,14); g.fillStyle='#17201e'; g.fillText(fit(watch.length?watch.join(', '):'No repeated mistakes.',W-160),150,y+34);
+  y+=74; g.fillStyle='#f1f5f4'; g.fillRect(20,y-24,W-40,60); g.fillStyle='#5b6a66'; g.font=font(600,12); g.fillText('VERIFICATION CODE',32,y-4);
+  g.fillStyle='#17201e'; g.font='600 19px "JetBrains Mono", Consolas, monospace'; g.fillText(hwCode(),32,y+22);
+  g.textAlign='right'; g.font=font(400,12); g.fillStyle='#5b6a66'; g.fillText('apwne.github.io/WNE-FY-Breadboard-Simulator',W-32,y+22); g.textAlign='left';
+  return c; }
+function showCompletion(){ if(!hw||!hw.st||!hw.st.finishedAt) return; const cv=cardCanvas(), url=cv.toDataURL('image/png');
+  showModal(`<h2>All ${hw.list.length} challenges complete</h2><p>Save the image and upload it to your Canvas assignment.</p><img class="hw-card" src="${url}" alt="Completion card for ${esc(hw.st.name)}">
+    <div class="hw-acts"><button class="btn primary" data-hw="saveimg">Save image</button><button class="btn" data-hw="close">Back to the simulator</button></div>`);
+  $('#modalBox').dataset.img=url; }
+
+/* continuity reminder */
+function contPrompt(){ try{ if(sessionStorage.getItem('pico-bb-lab-beep')) return; sessionStorage.setItem('pico-bb-lab-beep','1'); }catch(e){}
+  showModal(`<h2>Turn up your speaker volume</h2><p>In continuity mode the meter beeps when the two probes touch connected points. Make sure your sound is on before you test.</p>
+    <div class="hw-acts"><button class="btn" data-hw="testbeep">Test beep</button><button class="btn primary" data-hw="close">Got it</button></div>`); }
+
+/* events */
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-hw],[data-hwopen]'); if(!b) return; e.preventDefault();
+  if(b.dataset.hwopen){ hwOpen(b.dataset.hwopen); return; }
+  const a=b.dataset.hw;
+  if(a==='start'){ const n=($('#hwName').value||'').trim().replace(/\s+/g,' '); if(n.split(' ').length<2||n.length<3){ $('#hwName').focus(); $('#hwName').placeholder='Please type your first and last name'; $('#hwName').value=n; return; } hwStart(n); }
+  else if(a==='continue'){ hideModal(); chal={min:false}; renderCard(); if(hw.st.finishedAt) showCompletion(); }
+  else if(a==='restart-all'){ showModal(`<p>Start over? This clears your saved progress for this assignment.</p><div class="hw-acts"><button class="btn danger armed" data-hw="restart-yes">Start over</button><button class="btn" data-hw="continue">Keep my progress</button></div>`); }
+  else if(a==='restart-yes'){ try{ localStorage.removeItem(hwKey(hw.id)); }catch(_){} hw.st=null; hwBoot(); }
+  else if(a==='save') hwSaveFile(); else if(a==='load') hwLoadFile();
+  else if(a==='card') showCompletion(); else if(a==='close') hideModal(); else if(a==='testbeep') beep();
+  else if(a==='saveimg'){ const l=document.createElement('a'); l.href=$('#modalBox').dataset.img; l.download=`${hw.title.replace(/[^\w]+/g,'-')}-${hw.st.name.replace(/[^\w]+/g,'-')}.png`; document.body.appendChild(l); l.click(); l.remove(); }
+  else if(a==='make'){ const pick=[...document.querySelectorAll('[data-pick]:checked')].map(x=>x.dataset.pick); chal.title=$('#hwTitle').value.trim()||'Breadboarding homework'; chal.pick=pick;
+    if(!pick.length){ chal.link=''; renderCard(); return; } const base=/github\.io$/.test(location.hostname)||/^(localhost|127\.)/.test(location.hostname)?location.origin+location.pathname:'https://apwne.github.io/WNE-FY-Breadboard-Simulator/';
+    chal.link=base+'#hw-'+b64u(JSON.stringify({t:chal.title,c:pick})); renderCard(); }
+  else if(a==='copy'){ const i=$('#hwLink'); i.select(); try{ navigator.clipboard.writeText(i.value).then(()=>{ b.textContent='Copied'; },()=>{}); }catch(_){} }
+  else if(a==='verify'){ chal.vName=$('#vName').value; chal.vCode=$('#vCode').value; chal.vLink=$('#vLink').value; const r=hwVerify(chal.vName,chal.vCode,chal.vLink);
+    chal.vOut = r.ok ? `<div class="ch-win">Valid. Completed ${r.date}, ${r.mins} min active time.<br>${r.attempts.map((n,i)=>`${i+1}. ${esc(r.list&&r.list[i]?chTitle(r.list[i]):'Challenge '+(i+1))}: ${n} attempt${n===1?'':'s'}`).join('<br>')}</div>` : `<div class="ch-hint" style="grid-column:auto">${esc(r.msg)}</div>`; renderCard(); }
+});
+window.addEventListener('hashchange',()=>{ if(/^#hw-/.test(location.hash)) hwBoot(); });
+
 /* ================= boot ================= */
 function boot(){
   renderDefs(); renderBoard(); renderBin();
@@ -2838,6 +3080,7 @@ function boot(){
   renderInspector(); commit(); setPane(paneTab); applySizes(); fitView(); requestAnimationFrame(tick);
   new ResizeObserver(()=>{ if(!stage.dataset.fitted){ fitView(); } }).observe(stage);
   setTimeout(()=>{ stage.dataset.fitted='1'; }, 600);
+  hwBoot();
 }
 boot();
 </script>
