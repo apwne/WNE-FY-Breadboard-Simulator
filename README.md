@@ -6,6 +6,8 @@ A browser-based breadboard simulator for practising first-year circuit wiring an
 
 **Open it:** https://apwne.github.io/WNE-FY-Breadboard-Simulator/
 
+> A work-in-progress paper describing this tool, *An Open-Source Virtual Lab That Connects Wiring, Code and Schematics*, has been submitted to the 2027 ASEE Annual Conference and is currently under review.
+
 ## What's in it
 
 - **Breadboard:** full-size, 63 columns with split rails. Drag parts from the bin; pins snap into holes. Every part rotates (R key), including servos, motors and the Kitronik board.
@@ -102,6 +104,8 @@ then open http://localhost:8000. Live inputs need a server that sends the `Cross
 
 ## Credit
 
-© 2026 Arnab Purkayastha, Western New England University. All rights reserved. Please contact the author before reusing or redistributing this work.
+© 2026 Arnab Purkayastha, Western New England University. This project is open source under the [MIT License](LICENSE): you may use, change and share it, including in your own courses, as long as the copyright notice is kept.
+
+If you use it in teaching or research, please cite it. GitHub's **Cite this repository** button (from `CITATION.cff`) gives the reference.
 
 MicroPython is © Damien P. George and contributors, used under the MIT licence (see `micropython/LICENSE`).

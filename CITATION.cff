@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this simulator in teaching or research, please cite it as below."
+title: "Breadboard Simulator: An Open-Source Virtual Lab That Connects Wiring, Code and Schematics"
+type: software
+authors:
+  - family-names: Purkayastha
+    given-names: Arnab
+    affiliation: Western New England University
+version: "2.3"
+date-released: 2026-10-04
+license: MIT
+repository-code: "https://github.com/apwne/WNE-FY-Breadboard-Simulator"
+url: "https://apwne.github.io/WNE-FY-Breadboard-Simulator/"
+keywords:
+  - first-year engineering
+  - open-source educational software
+  - circuit simulation
+  - breadboarding
+  - MicroPython
+  - Raspberry Pi Pico
