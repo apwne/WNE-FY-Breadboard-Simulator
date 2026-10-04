@@ -11,26 +11,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Drag-and-drop breadboard simulator for first-year electronics: Raspberry Pi Pico 2 WH, motor driver, servos, sensors, multimeter, live schematic and auto-checked wiring challenges.">
 <title>Breadboard Simulator</title>
+<script>
+/* GitHub Pages can't send the headers MicroPython needs for live inputs; coi-sw.js adds them. */
+(function(){ try{
+  if(window.crossOriginIsolated){ sessionStorage.removeItem('coi-reload'); return; }
+  if(!location.hostname.endsWith('.github.io') || !('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('coi-sw.js').then(function(r){
+    var reload=function(){ if(!sessionStorage.getItem('coi-reload')){ sessionStorage.setItem('coi-reload','1'); location.reload(); } };
+    if(r.active && !navigator.serviceWorker.controller) reload();
+    navigator.serviceWorker.addEventListener('controllerchange', reload);
+  }).catch(function(){});
+}catch(e){} })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* Layout: workbench in three panes — parts bin | ESD-mat canvas | inspector. Stacks vertically on phones. */
 :root{
   --bg:#e9eeec; --panel:#ffffff; --ink:#17201e; --muted:#5b6a66; --line:#d3dcd9; --chip:#f1f5f4;
   --mat:#c9d8d4; --matdot:#b2c6c1; --accent:#0e7468; --accent-ink:#ffffff; --accent-soft:#d5ece8;
   --warn:#a85d06; --warn-bg:#fdf1de; --bad:#bf2a20; --bad-bg:#fbe4e1; --ok:#167a3c;
+  --syn-kw:#8a2bb5; --syn-str:#2f7d32; --syn-num:#b4560a; --syn-com:#7d8a86; --syn-fn:#0e6fa8; --syn-call:#1f5f8b; --sel:rgba(14,116,104,.25);
+  --con-bg:#0f1716; --con-fg:#d9e6e2; --con-err:#ff8a7e; --con-sys:#7fb8ad;
   --font-ui:"Archivo", "Segoe UI", system-ui, sans-serif;
   --font-mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#101716; --panel:#182120; --ink:#e3ecea; --muted:#90a29d; --line:#2a3634; --chip:#1f2a28;
   --mat:#1b2f2c; --matdot:#25403c; --accent:#3cc9b6; --accent-ink:#04211d; --accent-soft:#16413b;
-  --warn:#f0a83a; --warn-bg:#3a2a12; --bad:#ff7a6e; --bad-bg:#3d1a17; --ok:#55d68a; color-scheme:dark } }
+  --warn:#f0a83a; --warn-bg:#3a2a12; --bad:#ff7a6e; --bad-bg:#3d1a17; --ok:#55d68a;
+  --syn-kw:#d8a0ff; --syn-str:#9ad69a; --syn-num:#f3b06b; --syn-com:#7f918c; --syn-fn:#7cc4f0; --syn-call:#9fc9e8; --sel:rgba(60,201,182,.3); color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#101716; --panel:#182120; --ink:#e3ecea; --muted:#90a29d; --line:#2a3634; --chip:#1f2a28;
   --mat:#1b2f2c; --matdot:#25403c; --accent:#3cc9b6; --accent-ink:#04211d; --accent-soft:#16413b;
-  --warn:#f0a83a; --warn-bg:#3a2a12; --bad:#ff7a6e; --bad-bg:#3d1a17; --ok:#55d68a; color-scheme:dark }
+  --warn:#f0a83a; --warn-bg:#3a2a12; --bad:#ff7a6e; --bad-bg:#3d1a17; --ok:#55d68a;
+  --syn-kw:#d8a0ff; --syn-str:#9ad69a; --syn-num:#f3b06b; --syn-com:#7f918c; --syn-fn:#7cc4f0; --syn-call:#9fc9e8; --sel:rgba(60,201,182,.3); color-scheme:dark }
 
 [hidden]{display:none!important}
 body{margin:0}
@@ -147,6 +163,45 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
 .badge text{fill:#fff;font-size:10px;font-weight:700;text-anchor:middle}
 .act{cursor:pointer}
 
+/* lower pane: schematic + MicroPython */
+.btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+#bCode.running::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-left:6px;vertical-align:1px}
+.pane-tabs{display:flex;align-items:center;gap:4px;padding:5px 8px;border-bottom:1px solid var(--line)}
+.ptab{border:0;background:none;padding:5px 11px;border-radius:6px;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer}
+.ptab.on{background:var(--accent-soft);color:var(--accent)}
+.runpill{font-size:11px;font-weight:600;color:var(--ok);border:1px solid var(--ok);border-radius:10px;padding:1px 8px}
+.pane{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+.code-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
+.code-bar select{font-size:12.5px}
+.cb-l{display:flex;align-items:center;gap:5px;color:var(--muted)}
+.code-status{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.code-confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 10px;background:var(--warn-bg);font-size:12.5px;border-bottom:1px solid var(--line)}
+.code-main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,36%)}
+.code-left{display:flex;flex-direction:column;min-width:0;min-height:0;border-right:1px solid var(--line)}
+.ftabs{display:flex;gap:3px;padding:5px 8px 0;align-items:flex-end;flex-wrap:wrap}
+.ftab{border:1px solid var(--line);border-bottom:0;background:var(--panel);border-radius:6px 6px 0 0;padding:4px 10px;font:12px var(--font-mono);cursor:pointer;color:var(--muted);display:flex;gap:6px;align-items:center}
+.ftab.on{background:var(--chip);color:var(--ink);font-weight:600}
+.ftab .x{border:0;background:none;color:inherit;cursor:pointer;padding:0 2px;font-size:13px;line-height:1}
+.ftab .x.armed{color:var(--bad);font-weight:700}
+.ftab-add{border:1px dashed var(--line);background:none;border-radius:6px 6px 0 0;padding:4px 9px;font-size:12px;cursor:pointer;color:var(--muted)}
+.ftab-add:hover{color:var(--accent);border-color:var(--accent)}
+.ftab.lib small{font-size:9.5px;color:var(--muted);font-weight:400}
+.ed-c textarea[readonly]{cursor:default}
+.fnew{font:12px var(--font-mono);width:130px;padding:3px 6px;border:1px solid var(--accent);border-radius:5px;background:var(--panel)}
+.ed{flex:1 1 auto;min-height:0;overflow:auto;display:flex;align-items:flex-start;background:var(--chip);font:12.5px/1.55 var(--font-mono);border-top:1px solid var(--line)}
+.ed-g{flex:none;padding:8px 8px 8px 10px;text-align:right;color:var(--muted);user-select:none;border-right:1px solid var(--line);white-space:pre;min-width:38px;min-height:100%;font-variant-numeric:tabular-nums}
+.ed-g .err{color:#fff;background:var(--bad);border-radius:3px;padding:0 3px}
+.ed-c{position:relative;flex:1 0 auto;min-height:100%}
+.ed-c pre,.ed-c textarea{margin:0;padding:8px 12px;font:inherit;white-space:pre;tab-size:4;border:0;letter-spacing:0;word-spacing:0}
+.ed-c pre{color:var(--ink);pointer-events:none}
+.ed-c textarea{position:absolute;inset:0;width:100%;height:100%;resize:none;background:transparent;color:transparent;caret-color:var(--ink);outline:none;overflow:hidden}
+.ed-c textarea::selection{background:var(--sel)}
+.t-kw{color:var(--syn-kw);font-weight:600} .t-str{color:var(--syn-str)} .t-num{color:var(--syn-num)} .t-com{color:var(--syn-com);font-style:italic} .t-fn{color:var(--syn-fn)} .t-call{color:var(--syn-call)}
+.con-wrap{display:flex;flex-direction:column;min-width:0;min-height:0}
+.con-head{display:flex;gap:8px;align-items:center;padding:5px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
+.console{flex:1 1 auto;overflow:auto;padding:6px 10px;font:12px/1.5 var(--font-mono);background:var(--con-bg);color:var(--con-fg);white-space:pre-wrap;overflow-wrap:anywhere;min-height:0}
+.console .e{color:var(--con-err)} .console .s{color:var(--con-sys)}
+
 /* stage + schematic split */
 .stagebox{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
 .stagebox > .stage{flex:1 1 auto}
@@ -205,7 +260,9 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
 
 @media (max-width: 880px){
   .legend{top:auto;bottom:10px;right:54px}
-  .schem{flex:none;height:360px}
+  .schem{flex:none;height:520px}
+  .code-main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) 150px}
+  .code-left{border-right:0;border-bottom:1px solid var(--line)}
   body{overflow:auto;height:auto}
   #app{height:auto}
   .main{grid-template-columns:minmax(0,1fr)}
@@ -237,7 +294,8 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
       <button class="btn" id="bDel" title="Delete selected (Del)">Delete</button>
       <span class="sep"></span>
       <select class="btn" id="selEx" aria-label="Load an example circuit"><option value="">Load example…</option></select>
-      <label class="tog" title="Show the circuit diagram that your wiring makes"><input type="checkbox" id="cSch"> Schematic</label>
+      <button class="btn" id="bSch" title="Show the circuit diagram that your wiring makes">Schematic</button>
+      <button class="btn" id="bCode" title="Program the Pico in MicroPython">Code</button>
       <label class="tog" title="Reveal the metal strips under the holes, coloured by voltage"><input type="checkbox" id="cX"> Show strips</label>
       <label class="tog"><input type="checkbox" id="cFlow" checked> Current flow</label>
       <button class="btn danger" id="bClear">Clear board</button>
@@ -262,8 +320,29 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
       </div>
     </div>
       <div class="schem" id="schem" hidden>
-        <div class="sch-head"><b>Schematic</b><span class="note" id="schNote">Draws itself from your breadboard wiring. Labels with the same name are connected.</span><label class="tog"><input type="checkbox" id="cSchV" checked> Voltages</label><button class="btn" id="bSchBig" style="margin-left:auto;padding:3px 10px">Expand</button></div>
-        <svg id="sch" preserveAspectRatio="xMidYMin meet" aria-label="Schematic generated from the breadboard"></svg>
+        <div class="pane-tabs"><button class="ptab" data-ptab="sch">Schematic</button><button class="ptab" data-ptab="code">MicroPython</button><span class="runpill" id="runPill" hidden>running</span><span style="flex:1"></span><button class="btn" id="bSchBig" style="padding:3px 10px">Expand</button><button class="iconbtn" id="bPaneX" aria-label="Close panel">✕</button></div>
+        <div class="pane" id="paneSch">
+          <div class="sch-head"><span class="note" id="schNote">Draws itself from your breadboard wiring. Labels with the same name are connected.</span><label class="tog"><input type="checkbox" id="cSchV" checked> Voltages</label></div>
+          <svg id="sch" preserveAspectRatio="xMidYMin meet" aria-label="Schematic generated from the breadboard"></svg>
+        </div>
+        <div class="pane" id="paneCode" hidden>
+          <div class="code-bar">
+            <button class="btn primary" id="bRun" title="Run main.py (Ctrl+Enter)">▶ Run</button>
+            <button class="btn" id="bStop" disabled>■ Stop</button>
+            <label class="cb-l">Time limit <select class="in" id="selLimit"><option value="10">10 s</option><option value="30">30 s</option><option value="60" selected>60 s</option><option value="120">2 min</option><option value="300">5 min</option></select></label>
+            <label class="cb-l">Runs on <select class="in" id="selTarget"></select></label>
+            <select class="in" id="selStarter" aria-label="Load a starter program"><option value="">Starter programs…</option></select>
+            <span class="code-status" id="codeStatus"></span>
+          </div>
+          <div class="code-confirm" id="codeConfirm" hidden></div>
+          <div class="code-main">
+            <div class="code-left"><div class="ftabs" id="ftabs"></div>
+              <div class="ed" id="ed"><div class="ed-g" id="edG"></div><div class="ed-c"><pre id="edH" aria-hidden="true"></pre><textarea id="edT" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="MicroPython code editor"></textarea></div></div>
+            </div>
+            <div class="con-wrap"><div class="con-head"><b>Console</b><span class="note" id="liveNote"></span><span style="flex:1"></span><button class="linkbtn" id="bConClear">Clear</button></div><div class="console" id="con" aria-live="polite"></div></div>
+          </div>
+          <input type="file" id="fileUp" accept=".py,text/x-python,text/plain" multiple hidden>
+        </div>
       </div>
     </section>
     <aside class="insp" id="insp" aria-label="Inspector"></aside>
@@ -504,6 +583,17 @@ DEF.psu = { kind:'module', z:3, name:'Bench power supply', short:'Power supply',
     <div class="chips">${[3.3,5,6,9,12].map(v=>`<button class="chipb${p.props.volts===v?' on':''}" data-set="volts" data-val="${v}">${v} V</button>`).join('')}</div></div>`; }
 };
 
+DEF.batt = { kind:'module', z:3, name:'AA battery pack', short:'AA battery pack', desc:'AA cells in series, 1.5 V each: four cells give about 6 V. Red lead is +, black lead is −. Use it to power servos and motors, and join its − to a Pico GND.',
+  w:120, h:58, pinNames:['+ (red lead)','− (black lead)'], props:{cells:4},
+  leads:[{name:'+',col:'#d92f2f',o:[0,18],dir:[-1,0],fl:[-60,8]},{name:'−',col:'#262626',o:[0,40],dir:[-1,0],fl:[-60,48]}],
+  el(p,c){ c.add(Vs(c.n(0),c.n(1),1.5*p.props.cells,0.4),'v'); c.gnd(c.n(1)); },
+  render(p,S){ const n=p.props.cells; let cells=''; for(let i=0;i<n;i++){ const x=8+(i%2)*56, y=8+Math.floor(i/2)*22, flip=i%2; cells+=`<rect x="${x}" y="${y}" width="50" height="18" rx="4" fill="#2b2e33" stroke="#555"/><rect x="${flip?x:x+38}" y="${y}" width="12" height="18" rx="3" fill="#c98a3c"/>`; }
+    return `<g transform="translate(${p.x},${p.y})"><rect width="120" height="${n>2?58:36}" rx="6" fill="#111" stroke="#000"/>${cells}${txt(60,n>2?54:33,`${n}×AA · ${(1.5*n).toFixed(1)} V`,{fs:6.5,fill:'#bbb',a:'middle'})}</g>`+moduleCables(p,S)+endDots(p); },
+  an(p,A,o){ const I=A.refs.v.I; o.leadI=[I,-I]; o.ro.push(['Voltage',(1.5*p.props.cells).toFixed(1)+' V nominal'],['Current',fmtI(I)]);
+    if(I>2.5) A.warn('bad','The battery pack is shorted: a wire or part joins + straight to −.'); },
+  insp(p){ return `<div class="field"><h4>Cells</h4><div class="chips">${[2,4].map(n=>`<button class="chipb${p.props.cells===n?' on':''}" data-set="cells" data-val="${n}">${n}×AA · ${(1.5*n).toFixed(1)} V</button>`).join('')}</div></div>`; }
+};
+
 DEF.pico = { kind:'fixed', z:1, name:'Raspberry Pi Pico 2 WH', short:'Pico 2 WH', desc:'Straddle the centre channel (pins in rows c and h). The pin controls below stand in for your MicroPython code.',
   foot:PICO_FOOT, ctr:[9.5,3.5], pinNames:PICO_PINS.slice(1).map((n,i)=>`${n} (pin ${i+1})`), props:{usb:true,gpio:{}},
   el(p,c){ addPico(c, n=>c.n(n-1), p.props); },
@@ -529,24 +619,28 @@ DEF.pico = { kind:'fixed', z:1, name:'Raspberry Pi Pico 2 WH', short:'Pico 2 WH'
   insp(p){ return `<div class="field"><label class="tog"><input type="checkbox" data-prop="usb" ${p.props.usb?'checked':''}> USB cable plugged in (5 V on VBUS)</label></div>`+gpioPanel(p,'',p.props,null); }
 };
 
-const DRV_LABEL={GP2:'Motor 1 · IN1',GP3:'Motor 1 · IN2',GP6:'Motor 2 · IN1',GP7:'Motor 2 · IN2',GP0:'header',GP1:'header',GP27:'header (ADC1)',GP28:'header (ADC2)'};
-DEF.driver = { kind:'module', z:3, name:'Kitronik Motor Driver Board for Pico', short:'Kitronik motor driver', desc:'Block diagram with a Pico docked. Two DC motor outputs (DRV8833): GP2/GP3 drive motor 1, GP6/GP7 drive motor 2. Power it with 3–10.8 V on the screw terminals.',
-  w:380, h:230, leads:[], props:{on:true,pico:{usb:false,gpio:{}}},
-  terms:[[22,118,'Power in +'],[22,150,'Power in −'],[358,52,'Motor 1 A'],[358,82,'Motor 1 B'],[358,150,'Motor 2 A'],[358,180,'Motor 2 B'],[130,206,'3V (from Pico)'],[150,206,'GND'],[170,206,'GP0'],[190,206,'GP1'],[210,206,'GP27'],[230,206,'GP28']],
+// Which Pico pins drive the motors. "wne" matches KitronikPicoMotor() in the WNE103 class library.
+const DRV_MAPS={wne:{label:'WNE robot', m1:['GP12','GP13'], m2:['GP9','GP8']}, kitronik:{label:'Kitronik standard', m1:['GP3','GP2'], m2:['GP6','GP7']}};
+const drvMap=p=>DRV_MAPS[p.props.pins]||DRV_MAPS.wne;
+let DRV_LABEL={};
+function drvLabels(p){ const m=drvMap(p); return {[m.m1[0]]:'Motor 1 · forward',[m.m1[1]]:'Motor 1 · reverse',[m.m2[0]]:'Motor 2 · forward',[m.m2[1]]:'Motor 2 · reverse',GP0:'screw terminal',GP1:'screw terminal',GP26:'screw terminal (ADC0)',GP27:'screw terminal (ADC1)'}; }
+DEF.driver = { kind:'module', z:3, name:'Kitronik Motor Driver Board for Pico', short:'Kitronik motor driver', desc:'Block diagram with a Pico docked. Two DC motor outputs (DRV8833) plus GP0, GP1, GP26, GP27, 3V and GND on screw terminals. Power it with 3–10.8 V. The WNE robot wiring matches KitronikPicoMotor() in the WNE103 library.',
+  w:380, h:230, leads:[], props:{on:true,pins:'wne',pico:{usb:false,gpio:{}}},
+  terms:[[22,118,'Power in +'],[22,150,'Power in −'],[358,52,'Motor 1 A'],[358,82,'Motor 1 B'],[358,150,'Motor 2 A'],[358,180,'Motor 2 B'],[210,206,'3V (from Pico)'],[230,206,'GND'],[130,206,'GP0'],[150,206,'GP1'],[170,206,'GP27'],[190,206,'GP26']],
   el(p,c){ const G=c.t(1), VM=c.in('vm'), VS=c.in('vsys');
     c.add(R(c.t(7),G,0.01));
     if(p.props.on) c.add(R(c.t(0),VM,0.02),'sw');
     c.add(R(VM,G,1e6));
-    const map={GND:G,AGND:G,'3V3':c.t(6),GP0:c.t(8),GP1:c.t(9),GP27:c.t(10),GP28:c.t(11),VSYS:VS};
+    const map={GND:G,AGND:G,'3V3':c.t(6),GP0:c.t(8),GP1:c.t(9),GP27:c.t(10),GP26:c.t(11),VSYS:VS};
     const pin=n=>map[PICO_PINS[n]]||c.in('p'+n);
     const brd={ s:{on:false}, dyn(){ return this.s.on?[Ev(VS,VM,[[VS,1],[G,-1]],3.6)]:[]; },
       upd(S){ const on=S.v(VM)-S.v(G)>=3.0; if(on!==this.s.on){this.s.on=on;return true;} return false; } };
     c.add(brd,'brd');
     const pc=addPico(c,pin,p.props.pico,{embedded:true});
-    const gp=p.props.pico.gpio;
+    const gp=p.props.pico.gpio, mp=drvMap(p);
     const drv={ s:{en:false},
       dyn(){ if(!this.s.en) return []; const out=[];
-        for(const [ia,ib,MA,MB,tag] of [['GP2','GP3',c.t(2),c.t(3),'m1'],['GP6','GP7',c.t(4),c.t(5),'m2']]){
+        for(const [ia,ib,MA,MB,tag] of [[mp.m1[0],mp.m1[1],c.t(2),c.t(3),'m1'],[mp.m2[0],mp.m2[1],c.t(4),c.t(5),'m2']]){
           const a=lvl(gp?.[ia])||0, b=lvl(gp?.[ib])||0;
           const hi=(X,k)=>{ const e=Ev(X,VM,[[X,1],[G,-1],[VM,-k],[G,k]],0); e.tag=tag; return e; };
           const lo=X=>{ const e=Ev(X,G,[[X,1],[G,-1]],0); e.tag=tag+'lo'; return e; };
@@ -572,8 +666,9 @@ DEF.driver = { kind:'module', z:3, name:'Kitronik Motor Driver Board for Pico', 
         ${[...Array(20).keys()].map(i=>`<circle cx="${8+i*9.6}" cy="6" r="2.3" fill="#d9b44a"/><circle cx="${8+i*9.6}" cy="78" r="2.3" fill="#d9b44a"/>`).join('')}
         ${txt(100,72,'Pico 2 W (docked)',{fs:8,a:'middle',fill:'#e6fbe9',w:600})}
         <circle cx="16" cy="26" r="${S.on?6:2.5}" fill="${S.on?'url(#glow-green)':'#e9f5ea'}"/></g>
-      <rect x="118" y="196" width="124" height="20" rx="2" fill="#0e1512"/>
-      ${d.terms.slice(6).map(t=>hdrPin(t[0],t[1])+txt(t[0],190,t[2].split(' ')[0],{fs:6,a:'middle',fill:'#c9d1d6'})).join('')}
+      <rect x="118" y="196" width="124" height="20" rx="2" fill="#151515"/>
+      ${d.terms.slice(6).map(t=>screw(t[0],t[1])+txt(t[0],190,t[2].split(' ')[0],{fs:6,a:'middle',fill:'#c9d1d6'})).join('')}
+      ${txt(78,163,'Wiring: '+drvMap(p).label,{fs:7,fill:'#9aa3a8'})}
       ${txt(16,186,'Kitronik',{fs:9,fill:'#c9d1d6',w:700})}${txt(16,198,'Motor Driver for Pico',{fs:7,fill:'#9aa3a8'})}
       ${txt(78,150,S.on?'Pico running':'Pico off: switch on and add power',{fs:7.5,fill:S.on?'#7fe3d3':'#9aa3a8'})}
     </g>`;
@@ -583,8 +678,8 @@ DEF.driver = { kind:'module', z:3, name:'Kitronik Motor Driver Board for Pico', 
     o.ro.push(['Board power', p.props.on ? (vm!=null&&vm>0.05?fmtV(vm):'no supply') : 'switched off', p.props.on&&vm>2.9?'ok':'muted']);
     if(vin!=null&&vin>10.8) A.warn('bad',`Motor supply is ${vin.toFixed(1)} V. The board accepts 3–10.8 V.`);
     if(p.props.on && vm!=null && vm>0.3 && vm<3) A.warn('warn',`Motor supply is only ${vm.toFixed(2)} V. Use 3–10.8 V.`);
-    const drv=A.refs.drv; const gp=p.props.pico.gpio||{};
-    for(const [ia,ib,tag,lab] of [['GP2','GP3','m1','Motor 1'],['GP6','GP7','m2','Motor 2']]){
+    const drv=A.refs.drv; const gp=p.props.pico.gpio||{}, mp=drvMap(p);
+    for(const [ia,ib,tag,lab] of [[mp.m1[0],mp.m1[1],'m1','Motor 1'],[mp.m2[0],mp.m2[1],'m2','Motor 2']]){
       const a=lvl(gp[ia])||0, b=lvl(gp[ib])||0; let st;
       if(!drv.s.en) st='off'; else if(a>0&&b===0) st=`FWD ${Math.round(a*100)}%`; else if(b>0&&a===0) st=`REV ${Math.round(b*100)}%`; else if(a>0&&b>0) st='BRAKE'; else st='COAST';
       const I=(drv.basics||[]).filter(e=>e.tag===tag).reduce((s,e)=>s+e.I,0);
@@ -594,8 +689,9 @@ DEF.driver = { kind:'module', z:3, name:'Kitronik Motor Driver Board for Pico', 
     analyzePico(pc,A,o); },
   insp(p){ return `<div class="field"><label class="tog"><input type="checkbox" data-prop="on" ${p.props.on?'checked':''}> Board power switch on</label>
       <label class="tog"><input type="checkbox" data-prop="pico.usb" ${p.props.pico.usb?'checked':''}> USB plugged into the docked Pico</label></div>
-      <p class="note">IN1 high + IN2 low = forward, the reverse = backward, both high = brake, both low = coast. Use PWM on one input for speed.</p>`
-      + gpioPanel(p,'pico.',p.props.pico,['GP2','GP3','GP6','GP7','GP0','GP1','GP27','GP28']); }
+      <div class="field"><h4>Pico wiring</h4><div class="chips">${Object.entries(DRV_MAPS).map(([k,m])=>`<button class="chipb${(p.props.pins||'wne')===k?' on':''}" data-set="pins" data-val="${k}">${m.label} · ${m.m1.join('/')}, ${m.m2.join('/')}</button>`).join('')}</div>
+      <p class="note">WNE robot matches KitronikPicoMotor() in the WNE103 library. Forward pin high + reverse pin low = forward; both low = coast; both high = brake. PWM on one pin sets the speed.</p></div>`
+      + (DRV_LABEL=drvLabels(p), gpioPanel(p,'pico.',p.props.pico,[...drvMap(p).m1,...drvMap(p).m2,'GP0','GP1','GP26','GP27'])); }
 };
 
 function servoDef(cont){ return { kind:'module', z:3, name: cont?'Continuous rotation servo':'Standard servo · TowerPro SG-5010', short: cont?'Continuous servo':'Servo SG-5010',
@@ -771,11 +867,11 @@ function servoAnalyze(p, A, o, cont){
       if(f<40||f>330) state=`PWM is ${f} Hz. Servos expect 50 Hz`;
       else if(us<400||us>2600) state=`Pulse is ${(us/1000).toFixed(2)} ms. Use 0.5–2.5 ms`;
       else if(!cont){ target=clamp((us-500)/2000*180,0,180); state=`Holding ${target.toFixed(0)}°`; }
-      else { speed = Math.abs(us-1500)<30 ? 0 : clamp((us-1500)/500,-1,1); state = speed===0?'Stopped (1.5 ms)':`${speed>0?'Forward':'Reverse'} ${Math.round(Math.abs(speed)*100)}%`; } } }
+      else { speed = Math.abs(us-1500)<30 ? 0 : clamp((us-1500)/500,-1,1); state = speed===0?'Stopped (1.5 ms)':`${speed>0?'Counter-clockwise':'Clockwise'} ${Math.round(Math.abs(speed)*100)}%`; } } }
   if(vs!=null&&vs>7.2) A.warn('bad',`Servo supply is ${vs.toFixed(1)} V. It is rated 4.8–6 V.`);
   else if(vs!=null&&vs>=3.5&&vs<4.5) A.warn('warn','Servo supply is low. Expect weak, jittery movement.');
-  o.state=state; o.vs=vs; o.ro.push(['State',state]); o.target=target; o.speed=speed*360*clamp((vs||0)/6,0,1.2);
-  o.badge = target!=null ? Math.round(target)+'°' : cont&&speed ? (speed>0?'FWD ':'REV ')+Math.round(Math.abs(speed)*100)+'%' : (vs>3.5?'idle':'no power');
+  o.state=state; o.vs=vs; o.ro.push(['State',state]); o.target=target; o.speed=-speed*360*clamp((vs||0)/6,0,1.2);
+  o.badge = target!=null ? Math.round(target)+'°' : cont&&speed ? (speed>0?'CCW ':'CW ')+Math.round(Math.abs(speed)*100)+'%' : (vs>3.5?'idle':'no power');
 }
 
 /* ================= MNA solver ================= */
@@ -808,7 +904,7 @@ function solveMNA(basics, gndCands){
 
 /* ================= simulation ================= */
 function nodeOf(p,i){ const a = DEF[p.type].kind==='fixed' ? fixedPins(p)[i] : p.ends[i]; if(!a||a.k==='f') return `F${p.id}.${i}`; return a.k==='h' ? stripKey(a.c,a.r) : `T${a.p}.${a.i}`; }
-function simulate(){ sim.flashes=[]; for(let pass=0;pass<6;pass++){ if(!runSim()) break; } }
+function simulate(){ sim.flashes=[]; for(let pass=0;pass<6;pass++){ if(!runSim()) break; } if(mpRun) codeAfterSim(); }
 function runSim(){
   const els=[], refs={}, gnd=[], picos=[];
   for(const p of parts){ const d=DEF[p.type]; if(!d.el) continue; refs[p.id]={};
@@ -835,7 +931,7 @@ function runSim(){
   for(const p of parts){ const d=DEF[p.type]; const o={ro:[]}; out[p.id]=o; if(!d.an) continue;
     const A={...A0, refs:refs[p.id]||{}, node:i=>nodeOf(p,i), warn:(lv,msg)=>warns.push({pid:p.id,lv,msg}), burn:msg=>{ burned=true; sim.flashes.push({pid:p.id,msg}); }};
     d.an(p,A,o); }
-  sim={...sim, V, parts:out, warns, v:A0.v, net:nf};
+  sim={...sim, V, parts:out, warns, v:A0.v, net:nf, picos};
   return burned;
 }
 
@@ -911,7 +1007,9 @@ function gpioPanel(p, base, props, only){
     if(cfg.m==='pwm'){ const f=cfg.f??1000, d=cfg.d??50; h+=`<div class="gp-pwm"><label>Hz <input type="number" min="1" max="100000" value="${f}" data-prop="${base}gpio.${name}.f" data-rebuild="1"></label><input type="range" min="0" max="100" step="0.1" value="${d}" data-prop="${base}gpio.${name}.d" aria-label="duty"><span class="val" data-out="${base}gpio.${name}.d">${(+d).toFixed(1)}%</span>
       <button class="chipb" data-servo="${base}gpio.${name}">Servo 50 Hz</button></div>`; }
     h+=`<div class="gp-read" data-gpio="${name}">…</div><div class="gp-code" data-code="${base}|${name}">${esc(CODE(name,cfg))}</div></div>`; }
-  return h+`</div></div>`;
+  h+=`</div></div>`;
+  if(mpRun&&mpRun.pid===p.id) h=`<div class="w warn">main.py is running and controls these pins. Press Stop to take over by hand.</div>`+h.replace(/<(select|input|button)\b/g,'<$1 disabled');
+  return h;
 }
 function renderInspector(){
   const p=committed(sel);
@@ -920,7 +1018,7 @@ function renderInspector(){
     <li>Draw a wire by dragging from one empty hole to another. Pick the wire colour in the bin.</li>
     <li>Drag a lead's end to re-plug it. Drag a part's body to move it. Cables on servos and sensors plug in the same way.</li>
     <li>Hover any hole to see what it connects to and its voltage.</li>
-    <li>Select the Pico to set each pin to input, output or PWM, the way your code would.</li>
+    <li>Press <b>Code</b> to program the Pico in MicroPython, or select the Pico to set its pins by hand.</li>
     <li>Keys: <kbd>R</kbd> rotate, <kbd>Del</kbd> delete, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplicate, <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo.</li></ol></div>
     <p class="note">Simulated at DC: PWM shows as its average voltage on LEDs and motors, and as a pulse width on servos. Your work saves in this browser.</p>`; return; }
   const d=DEF[p.type]; let h=`<div><h2>${esc(d.name)}</h2><p class="sub">${esc(d.desc)}</p></div>`;
@@ -942,7 +1040,7 @@ function renderStatus(){
   h+=`<span class="dot ${lv}"></span>`;
   if(fl.length) h+=fl.map(f=>`<button class="flash" data-pid="${f.pid}">${esc(f.msg)}</button>`).join('');
   if(w.length) h+=w.slice(0,3).map(x=>`<button data-pid="${x.pid}">${esc(x.msg)}</button>`).join('')+(w.length>3?`<span>+${w.length-3} more</span>`:'');
-  if(!w.length&&!fl.length){ const hasSrc=parts.some(p=>p.type==='psu'||(p.type==='pico'&&p.props.usb)||(p.type==='driver')); h+=`<span>${parts.length} part${parts.length===1?'':'s'} · ${hasSrc?'no problems found':'add a power supply or plug in the Pico’s USB'}</span>`; }
+  if(!w.length&&!fl.length){ const hasSrc=parts.some(p=>p.type==='psu'||p.type==='batt'||(p.type==='pico'&&p.props.usb)||(p.type==='driver')); h+=`<span>${parts.length} part${parts.length===1?'':'s'} · ${hasSrc?'no problems found':'add a power supply or plug in the Pico’s USB'}</span>`; }
   st.innerHTML=h;
 }
 
@@ -953,7 +1051,7 @@ function restore(s){ const o=JSON.parse(s); parts=o.parts; nextId=o.nextId; if(s
 function undo(){ if(!undoS.length) return; redoS.push(snapshot()); restore(undoS.pop()); syncBtns(); }
 function redo(){ if(!redoS.length) return; undoS.push(snapshot()); restore(redoS.pop()); syncBtns(); }
 function saveLS(){ try{ localStorage.setItem('pico-bb-lab-v1', snapshot()); }catch(e){} }
-function commit(){ simulate(); renderParts(); renderXray(); renderSchem(); renderStatus(); updateReadouts(); saveLS(); syncBtns(); if(chal&&chal.def&&chal.def.track) chal.def.track(chal); if(chal&&chal.def&&chal.checked) runCheck(); }
+function commit(){ simulate(); renderParts(); renderXray(); renderSchem(); renderStatus(); updateReadouts(); saveLS(); syncBtns(); if(paneTab==='code') renderTargets(); if(chal&&chal.def&&chal.def.track) chal.def.track(chal); if(chal&&chal.def&&chal.checked) runCheck(); }
 function syncBtns(){ $('#bUndo').disabled=!undoS.length; $('#bRedo').disabled=!redoS.length; const p=committed(sel); $('#bDel').disabled=!p; $('#bRot').disabled=!p||DEF[p.type].kind==='module'; }
 function select(id){ if(sel===id) return; sel=id; renderInspector(); drawOverlay(); syncBtns(); renderSchem(); partsG.querySelectorAll('.part').forEach(g=>g.classList.toggle('sel', +g.dataset.pid===id)); }
 
@@ -992,9 +1090,10 @@ const ICON={
  crservo:`<rect x="3" y="11" width="46" height="10" rx="2" fill="#202428"/><rect x="8" y="5" width="36" height="22" rx="3" fill="#2b3035"/><rect x="8" y="14" width="22" height="4" rx="2" fill="#f4f4f4"/><rect x="17" y="5" width="4" height="22" rx="2" fill="#f4f4f4"/>`,
  motor:`<rect x="18" y="8" width="30" height="16" rx="3" fill="#f2c12e"/><rect x="36" y="10" width="12" height="12" rx="5" fill="#c7cdd2"/><circle cx="14" cy="16" r="12" fill="#2a2a2a"/><circle cx="14" cy="16" r="7" fill="#f2c12e"/>`,
  meter:`<rect x="12" y="1" width="28" height="30" rx="4" fill="#f2c12e"/><rect x="15" y="4" width="22" height="24" rx="2" fill="#2b3036"/><rect x="17" y="6" width="18" height="7" fill="#c5d3b4"/><circle cx="26" cy="20" r="5" fill="#1b1e21" stroke="#888"/><path d="M20,28 q-8,3 -14,2 M32,28 q8,3 14,2" stroke-width="2" fill="none" stroke="#d92f2f"/>`,
+ batt:`<rect x="2" y="3" width="48" height="26" rx="4" fill="#111"/><rect x="5" y="6" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="27" y="6" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="5" y="17" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="27" y="17" width="20" height="9" rx="3" fill="#2b2e33"/><rect x="20" y="6" width="5" height="9" fill="#c98a3c"/><rect x="27" y="17" width="5" height="9" fill="#c98a3c"/>`,
  ir:`<rect x="2" y="9" width="48" height="14" rx="7" fill="#26292c"/><rect x="8" y="6" width="36" height="20" rx="4" fill="#1b1d1f"/><circle cx="17" cy="16" r="6" fill="#3a1414"/><circle cx="35" cy="16" r="6" fill="#151b2e"/>`,
 };
-const BIN=[['Breadboard basics',['resistor','led','thermistor','slide','micro']],['Power',['psu','reg']],['Controllers',['pico','driver']],['Motion & sensing',['servo','crservo','motor','ir']],['Test equipment',['meter']]];
+const BIN=[['Breadboard basics',['resistor','led','thermistor','slide','micro']],['Power',['psu','batt','reg']],['Controllers',['pico','driver']],['Motion & sensing',['servo','crservo','motor','ir']],['Test equipment',['meter']]];
 function renderBin(){
   let h=`<h3>Wires</h3><div class="wirebox">Drag from one hole to another to draw a wire.<div class="swatches">${WIRES.map(w=>`<button class="sw${w[0]===wireColor?' on':''}" style="background:${w[0]}" data-wc="${w[0]}" title="${w[2]} wire"></button>`).join('')}</div></div>`;
   for(const [title,list] of BIN){ h+=`<h3>${title}</h3><div class="bin-group">${list.map(t=>`<div class="bin-item" data-type="${t}" title="${esc(DEF[t].name)}"><svg viewBox="0 0 52 32">${ICON[t]}</svg><span>${esc(DEF[t].short)}</span></div>`).join('')}</div>`; }
@@ -1224,8 +1323,15 @@ Object.assign(EX,{
     const psu=mk('psu',{x:-120,y:-250,props:{volts:6}}); psu.ends=[T(drv.id,0),T(drv.id,1)];
     const m1=mk('motor',{x:560,y:-330}); m1.ends=[T(drv.id,2),T(drv.id,3)]; const m2=mk('motor',{x:560,y:-170}); m2.ends=[T(drv.id,4),T(drv.id,5)]; return [drv,psu,m1,m2]; }},
 });
+EX.limit={name:'Kitronik driver: motor with a limit switch on GP0', build(){ const drv=mk('driver',{x:120,y:-300,props:{on:true,pico:{usb:false,gpio:{}}}});
+  const psu=mk('psu',{x:-120,y:-250,props:{volts:6}}); psu.ends=[T(drv.id,0),T(drv.id,1)]; const mot=mk('motor',{x:560,y:-300}); mot.ends=[T(drv.id,2),T(drv.id,3)];
+  const sw=mk('micro',{x:390,y:-150}); sw.ends=[T(drv.id,7),T(drv.id,8),F(470,-80)]; return [drv,psu,mot,sw]; }};
+function servoClass(type){ const pico=mk('pico',{c:3,r:5,props:{usb:true,gpio:{}}}); const bat=mk('batt',{x:700,y:420}); bat.ends=[H(31,16),H(31,17)];
+  const s=mk(type,{x:250,y:420}); s.ends=[H(10,17),H(11,16),H(22,14)]; return [pico,bat,s,W(H(20,13),H(20,17),'#262626')]; }
+EX.servo15={name:'Continuous servo on GP15 + 6 V pack (class wiring)', build(){ return servoClass('crservo'); }};
+EX.servo15std={name:'Standard servo on GP15 + 6 V pack (class wiring)', build(){ return servoClass('servo'); }};
 EX.meter={name:'Multimeter measuring a voltage divider', build(){ const c=EX.divider.build(); const m=mk('meter',{x:330,y:-280}); m.ends=[H(7,3),H(13,1)]; return [...c,m]; }};
-const EX_GROUPS=[['Basics (no Pico)',['led5v','serpar','divider','meter','slidesel','ncno','reg']],['Pico',['blink','traffic','micro','therm','ir']],['Motors & servos',['servo','servoext','crservo','motor','twomotor']]];
+const EX_GROUPS=[['Basics (no Pico)',['led5v','serpar','divider','meter','slidesel','ncno','reg']],['Pico',['blink','traffic','micro','therm','ir']],['Motors & servos',['servo15','servo15std','servo','servoext','crservo','motor','twomotor','limit']]];
 $('#selEx').innerHTML += EX_GROUPS.map(([g,ks])=>`<optgroup label="${g}">${ks.map(k=>`<option value="${k}">${esc(EX[k].name)}</option>`).join('')}</optgroup>`).join('');
 
 /* ================= strip view ================= */
@@ -1300,7 +1406,7 @@ const STEPS={
     {t:'Brown wire shares ground with the Pico', f:c=> NET(nodeOf(c.sv,0))===c.gnd || 'Connect the brown wire to a Pico GND, or join the supply − rail to a Pico GND pin. The signal only works with a shared ground.'},
     {t:'Orange wire on GP16', f:c=> NET(nodeOf(c.sv,2))===gpNet(c.pc,'GP16') || 'GP16 is pin 21 at the top right of the Pico (row c, column 22). Plug the orange wire into rows a–e of column 22.'},
     {t:'GP16 is PWM at 50 Hz', f:c=>{ const g=gpCfg(c.pc,'GP16'); return (g.m==='pwm'&&+g.f>=40&&+g.f<=60) || 'Select the Pico, set GP16 to PWM and press "Servo 50 Hz".'; }},
-    {t:'The servo responds', f:c=> (SP(c.sv).target!=null || /Forward|Reverse|Stopped/.test(SP(c.sv).state||'')) || (SP(c.sv).state||'Not yet.')} ]},
+    {t:'The servo responds', f:c=> (SP(c.sv).target!=null || /clockwise|Stopped/i.test(SP(c.sv).state||'')) || (SP(c.sv).state||'Not yet.')} ]},
   therm:{ ctx:()=>{ const c=ctxPico(); if(!c.pc) return c; c.th=ofType('thermistor')[0]; c.m=gpNet(c.pc,'GP26'); c.v3=pinNet(c.pc,36); c.vb=pinNet(c.pc,40);
       if(c.th){ const t0=NET(nodeOf(c.th,0)), t1=NET(nodeOf(c.th,1)); c.o = t0===c.m?t1 : t1===c.m?t0 : null; } return c; }, steps:[
     picoPowered,
@@ -1332,8 +1438,8 @@ const STEPS={
     {t:'Board power switch is on', f:c=> c.d.props.on || 'Click the ON/OFF switch on the board.'},
     {t:'Motor wired to the Motor 1 terminals', f:c=>{ if(!c.mo) return 'Drag a DC motor onto the workspace.'; const a=NET(nodeOf(c.mo,0)), b=NET(nodeOf(c.mo,1)), t2=NET(`T${c.d.id}.2`), t3=NET(`T${c.d.id}.3`);
       return ((a===t2&&b===t3)||(a===t3&&b===t2)) || 'Plug both motor wires into the MOTOR 1 screw terminals.'; }},
-    {t:'GP2 and GP3 set for one direction', f:c=>{ const g=c.d.props.pico.gpio||{}; const a=lvl(g.GP2)||0, b=lvl(g.GP3)||0; if(a>0&&b>0) return 'Both inputs are on, which brakes the motor.';
-      return ((a>0)!==(b>0)) || 'Select the board. Set GP2 to Output HIGH (or PWM) and GP3 to Output LOW.'; }},
+    {t:'Motor 1 pins set for one direction', f:c=>{ const g=c.d.props.pico.gpio||{}, m=drvMap(c.d).m1; const a=lvl(g[m[0]])||0, b=lvl(g[m[1]])||0; if(a>0&&b>0) return 'Both motor 1 pins are on, which brakes the motor.';
+      return ((a>0)!==(b>0)) || `Select the board. Set ${m[0]} to Output HIGH (or PWM) and ${m[1]} to Output LOW. In code that is board.motorOn(1, 'f', 80).`; }},
     {t:'The motor spins', f:c=> Math.abs(SP(c.mo).speed||0)>10 || 'The motor is not turning yet.'} ]},
 };
 
@@ -1393,7 +1499,7 @@ const CH=[
     goal:'Drop 9 V to 3.3 V with the regulator, then light an LED from its output.',
     start(){ const psu=mk('psu',{x:30,y:-180,props:{volts:9}}); psu.ends=[H(2,0),H(2,1)]; return [psu, mk('led',{ends:[F(460,-100),F(480,-100)],props:{color:'green'}}), mk('resistor',{ends:[F(540,-100),F(620,-100)],props:{ohms:220}})]; }},
   {id:'motor', kind:'build', lvl:'Advanced', title:'Spin a motor with the Kitronik driver', sol:'motor', set:'motor',
-    goal:'Power the motor driver, connect a DC motor to Motor 1, and set GP2/GP3 so it turns.',
+    goal:'Power the motor driver, connect a DC motor to Motor 1, and set its control pins so it turns.',
     start(){ return [mk('driver',{x:120,y:-300,props:{on:false,pico:{usb:false,gpio:{}}}}), mk('psu',{x:-130,y:-250,props:{volts:6}}), mk('motor',{x:580,y:-300})]; }},
   {id:'m-volt', kind:'measure', lvl:'Beginner', title:'Measure a voltage', sol:null, set:'mvolt',
     goal:'Use the multimeter to measure the voltage where the two resistors meet, then type what the meter shows. The values change each time you restart.',
@@ -1475,11 +1581,12 @@ $('#bCh').onclick=()=>{ if(chal&&!chal.min){ chal=null; } else if(chal){ chal.mi
 $('#selEx').onchange=e=>{ if(e.target.value) loadExample(e.target.value); e.target.value=''; };
 
 /* ================= schematic ================= */
-let showSch=false, schV=true;
-try{ showSch=localStorage.getItem('pico-bb-lab-sch')==='1'; }catch(e){}
-const DESIG={resistor:'R',led:'D',thermistor:'TH',motor:'M',psu:'BT',pico:'U',driver:'U',reg:'U',servo:'SV',crservo:'SV',ir:'IR',micro:'SW',slide:'SW'};
-const TWO=new Set(['resistor','led','thermistor','motor','psu']);
-const DRV_PINS=['VIN+','VIN−','M1A','M1B','M2A','M2B','3V','GND','GP0','GP1','GP27','GP28'];
+let paneTab=null, schV=true;
+try{ const t=localStorage.getItem('pico-bb-lab-pane'); paneTab = t==='sch'||t==='code' ? t : (localStorage.getItem('pico-bb-lab-sch')==='1'?'sch':null); }catch(e){}
+const DESIG={resistor:'R',led:'D',thermistor:'TH',motor:'M',psu:'BT',pico:'U',driver:'U',reg:'U',servo:'SV',crservo:'SV',ir:'IR',micro:'SW',slide:'SW',batt:'BT'};
+const TWO=new Set(['resistor','led','thermistor','motor','psu','batt']);
+const srcVolts=p=>p.type==='batt'?1.5*p.props.cells:+p.props.volts;
+const DRV_PINS=['VIN+','VIN−','M1A','M1B','M2A','M2B','3V','GND','GP0','GP1','GP27','GP26'];
 const BLK_TITLE={pico:'Pico 2 WH',driver:'Kitronik driver',reg:'LD1117-3.3',servo:'SG-5010 servo',crservo:'360° servo',ir:'IR distance',micro:'Micro switch',slide:'Slide switch'};
 function schPins(p){ const n=i=>nodeOf(p,i);
   switch(p.type){
@@ -1505,13 +1612,13 @@ function schModel(){
     for(const x of pins[p.id]){ conns.set(x.net,(conns.get(x.net)||0)+1); if(!repK.has(x.net)) repK.set(x.net,x.node); if(!TWO.has(p.type)) blockNets.add(x.net); } }
   const gnds=[]; const addG=(net,src)=>{ if(!gnds.find(g=>g.net===net)) gnds.push({net,src}); };
   for(const p of items){ const P=pins[p.id]; if(p.type==='pico') P.filter(x=>x.nm==='GND'||x.nm==='AGND').forEach(x=>addG(x.net,des[p.id])); if(p.type==='driver') addG(P[1].net,des[p.id]); }
-  for(const p of items) if(p.type==='psu') addG(pins[p.id][1].net,des[p.id]);
+  for(const p of items) if(p.type==='psu'||p.type==='batt') addG(pins[p.id][1].net,des[p.id]);
   const names=new Map(), kind=new Map();
   gnds.forEach((g,i)=>{ names.set(g.net, i===0?'GND':`GND·${g.src}`); kind.set(g.net,'gnd'); });
   const setN=(net,nm,k)=>{ if(!names.has(net)){ names.set(net,nm); kind.set(net,k); } };
   const used=net=>(conns.get(net)||0)>1;
   for(const p of items){ const P=pins[p.id];
-    if(p.type==='psu') setN(P[0].net,`+${+(+p.props.volts).toFixed(1)}V`,'pwr');
+    if(p.type==='psu'||p.type==='batt') setN(P[0].net,`+${+srcVolts(p).toFixed(1)}V`,'pwr');
     if(p.type==='pico') for(const x of P) if(['3V3','VBUS','VSYS'].includes(x.nm)&&used(x.net)) setN(x.net,x.nm,'pwr');
     if(p.type==='reg') setN(P[2].net,'3V3 REG','pwr');
     if(p.type==='driver'){ setN(P[0].net,'VIN','pwr'); if(used(P[6].net)) setN(P[6].net,'3V3','pwr'); } }
@@ -1544,13 +1651,13 @@ function schSym(e,x,y,flip,des){ const p=e.p, t=p.type, S=sim.parts[p.id]||{}; l
     else s+=`<path d="M${x},${y+14} V${y+22} M${x-9},${y+22} h18" class="sw"/><path d="M${x-9},${y+38} h18 L${x},${y+22} Z" class="sw" ${fill}/><line x1="${x}" y1="${y+38}" x2="${x}" y2="${y+42}" class="sw"/>`;
     s+=`<path d="M${x+11},${y+24} l7,-5 m-3,0 h3 v3 M${x+11},${y+31} l7,-5 m-3,0 h3 v3" class="sw" style="stroke-width:1.1"/>`; val=p.props.burnt?'burnt':p.props.color+(flip?' (reversed!)':''); }
   else if(t==='motor'){ s+=`<circle cx="${x}" cy="${y+28}" r="13" class="sw"/><text x="${x}" y="${y+32}" text-anchor="middle" font-weight="700">M</text>`; val=S.badge&&S.badge!=='stopped'?S.badge:''; }
-  else if(t==='psu'){ const pl=(yy,w,th)=>`<line x1="${x-w/2}" y1="${yy}" x2="${x+w/2}" y2="${yy}" class="sw" style="stroke-width:${th}"/>`;
+  else if(t==='psu'||t==='batt'){ const pl=(yy,w,th)=>`<line x1="${x-w/2}" y1="${yy}" x2="${x+w/2}" y2="${yy}" class="sw" style="stroke-width:${th}"/>`;
     s+=`<line x1="${x}" y1="${y+14}" x2="${x}" y2="${y+24}" class="sw"/><line x1="${x}" y1="${y+32}" x2="${x}" y2="${y+42}" class="sw"/>`+(!flip? pl(y+24,26,1.6)+pl(y+32,13,3.2) : pl(y+24,13,3.2)+pl(y+32,26,1.6));
-    s+=`<text x="${x-20}" y="${!flip?y+22:y+40}" text-anchor="middle" font-weight="700">+</text>`; val=`${(+p.props.volts).toFixed(1)} V`; }
+    s+=`<text x="${x-20}" y="${!flip?y+22:y+40}" text-anchor="middle" font-weight="700">+</text>`; val=`${srcVolts(p).toFixed(1)} V`; }
   const lx = t==='led' ? x+22 : x+16;
   return `<g class="sp${p.id===sel?' sch-sel':''}" data-pid="${p.id}"><rect class="shit" x="${x-16}" y="${y+10}" width="${70}" height="36"/>${s}<text x="${lx}" y="${y+26}" class="sdes">${des[p.id]}</text>${val?`<text x="${lx}" y="${y+38}" class="sm">${esc(val)}</text>`:''}</g>`; }
 function renderSchem(){
-  const box=$('#schem'); box.hidden=!showSch; if(!showSch) return; const svg=$('#sch'), note=$('#schNote');
+  if(paneTab!=='sch') return; const svg=$('#sch'), note=$('#schNote');
   if(!parts.some(p=>DESIG[p.type])){ svg.setAttribute('viewBox','0 0 420 80'); svg.innerHTML='<text x="210" y="44" text-anchor="middle" class="sm">Place parts and wire them up. The schematic draws itself here.</text>'; note.className='note'; note.textContent='Draws itself from your breadboard wiring. Labels with the same name are connected.'; return; }
   const M=schModel(); let s='', x0=1e9, y0=1e9, x1=-1e9, y1=-1e9; const bump=(ax,ay,bx,by)=>{ x0=Math.min(x0,ax); y0=Math.min(y0,ay); x1=Math.max(x1,bx); y1=Math.max(y1,by); };
   const volt=net=>{ if(!schV) return ''; const k=M.repK.get(net); const v=k!=null?sim.v(k):null; return v==null?'':(Math.abs(v)<0.005?'0.00':v.toFixed(2))+' V'; };
@@ -1587,17 +1694,506 @@ function renderSchem(){
   else { note.className='note'; note.textContent='Draws itself from your breadboard wiring. Labels with the same name are connected.'; }
 }
 $('#sch').addEventListener('click', e=>{ const g=e.target.closest('[data-pid]'); select(g?+g.dataset.pid:null); });
-$('#cSch').checked=showSch;
-$('#cSch').onchange=e=>{ showSch=e.target.checked; try{ localStorage.setItem('pico-bb-lab-sch',showSch?'1':'0'); }catch(_){} renderSchem(); requestAnimationFrame(fitView); };
+function setPane(t){ const was=paneTab; paneTab=t; try{ localStorage.setItem('pico-bb-lab-pane',t||''); }catch(_){}
+  $('#schem').hidden=!t; $('#paneSch').hidden=t!=='sch'; $('#paneCode').hidden=t!=='code';
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('on',b.dataset.ptab===t));
+  $('#bSch').classList.toggle('on',t==='sch'); $('#bCode').classList.toggle('on',t==='code');
+  if(t==='sch') renderSchem(); if(t==='code') codeShow();
+  if(!!was!==!!t) requestAnimationFrame(fitView); }
+$('#bSch').onclick=()=>setPane(paneTab==='sch'?null:'sch');
+$('#bCode').onclick=()=>setPane(paneTab==='code'?null:'code');
+document.querySelectorAll('.ptab').forEach(b=>{ b.onclick=()=>setPane(b.dataset.ptab); });
+$('#bPaneX').onclick=()=>setPane(null);
 $('#cSchV').onchange=e=>{ schV=e.target.checked; renderSchem(); };
 $('#bSchBig').onclick=()=>{ const b=$('#schem').classList.toggle('big'); $('#bSchBig').textContent=b?'Shrink':'Expand'; requestAnimationFrame(fitView); };
+
+/* ================= MicroPython ================= */
+const MOTOR_LIB=`# A small motor library for the Kitronik Motor Driver Board (WNE robot wiring).
+# Motor 1: GP12 forward, GP13 reverse. Motor 2: GP9 forward, GP8 reverse.
+from machine import Pin, PWM
+
+MOTOR1 = (12, 13)
+MOTOR2 = (9, 8)
+
+class Motor:
+    def __init__(self, pins, freq=1000):
+        self.a = PWM(Pin(pins[0]), freq=freq)
+        self.b = PWM(Pin(pins[1]), freq=freq)
+        self.stop()
+
+    def speed(self, percent):
+        """-100 = full reverse, 0 = stop, 100 = full forward"""
+        percent = max(-100, min(100, percent))
+        duty = int(abs(percent) / 100 * 65535)
+        self.a.duty_u16(duty if percent > 0 else 0)
+        self.b.duty_u16(duty if percent < 0 else 0)
+
+    def stop(self):
+        self.a.duty_u16(0)
+        self.b.duty_u16(0)
+`;
+const STARTERS=[
+ {name:'WNE103: continuous servo (CONServo)', circuit:'servo15', code:`from machine import Pin, PWM
+import WNE103
+import time
+
+S2 = WNE103.Servo(15) # Pin 15
+
+# Method 1:
+S2.CONServo("power", 100) # Counter-Clockwise with Full Speed
+time.sleep(2)
+S2.CONServo("power", 0) # Stop
+time.sleep(2)
+
+S2.CONServo("power", -100) # Clockwise with Full Speed
+time.sleep(2)
+S2.CONServo("power", 0) # Stop
+time.sleep(2)
+
+# Method 2: (duty: 3500 to 6500)
+S2.CONServo("duty", 6500) #  CCW with Full Speed
+time.sleep(2)
+S2.CONServo("duty", 5000) # Stop
+time.sleep(2)
+
+S2.CONServo("duty", 3500) # CW with Full Speed
+time.sleep(2)
+S2.CONServo("duty", 5000) # Stop
+`},
+ {name:'WNE103: standard servo (STServo)', circuit:'servo15std', code:`from machine import Pin, PWM
+import WNE103
+import time
+
+S1 = WNE103.Servo(15) # Pin 15
+
+for angle in (0, 45, 90, 135, 180, 90):
+    print("Angle", angle)
+    S1.STServo(angle)
+    time.sleep(1)
+`},
+ {name:'WNE103: drive a square (KitronikPicoMotor)', circuit:'twomotor', target:'driver', code:`from WNE103 import KitronikPicoMotor
+import time
+
+board = KitronikPicoMotor()
+
+# Motor helpers, as in main_vs2.py
+def forward(s):  board.motorOn(1,'f',s); board.motorOn(2,'f',s)
+def backward(s): board.motorOn(1,'r',s); board.motorOn(2,'r',s)
+def pivot_r(s):  board.motorOn(1,'f',s); board.motorOn(2,'r',s)
+def pivot_l(s):  board.motorOn(1,'r',s); board.motorOn(2,'f',s)
+def stop():      board.motorOff(1);      board.motorOff(2)
+
+for side in range(4):
+    print("Side", side + 1)
+    forward(50);  time.sleep(2)     # drive forward for 2 seconds
+    stop();       time.sleep(0.5)   # brief pause
+    pivot_r(50);  time.sleep(0.7)   # turn right for 0.7 seconds
+    stop();       time.sleep(0.5)
+
+print("Done")
+`},
+ {name:'WNE103: one motor forward and reverse', circuit:'motor', target:'driver', code:`from WNE103 import KitronikPicoMotor
+import time
+
+board = KitronikPicoMotor()
+
+board.motorOn(1, 'f', 80)    # motor 1, forward, 80% speed
+print("Forward 80%")
+time.sleep(3)
+board.motorOff(1)
+time.sleep(1)
+board.motorOn(1, 'r', 80)    # motor 1, reverse, 80% speed
+print("Reverse 80%")
+time.sleep(3)
+board.motorOff(1)
+print("Done")
+`},
+ {name:'Blink an LED on GP15', circuit:'blink', code:`from machine import Pin
+import time
+
+led = Pin(15, Pin.OUT)      # GP15 -> 220 ohm resistor -> LED -> GND
+
+for i in range(10):
+    led.toggle()
+    print("LED is", "on" if led.value() else "off")
+    time.sleep(0.5)
+
+led.off()
+print("Done!")
+`},
+ {name:'Blink the on-board LED (runs until the time limit)', circuit:null, code:`from machine import Pin
+import time
+
+led = Pin("LED", Pin.OUT)   # the small LED on the Pico itself
+
+while True:                 # runs until Stop or the time limit
+    led.toggle()
+    time.sleep(0.25)
+`},
+ {name:'Traffic light (GP13, GP14, GP15)', circuit:'traffic', code:`from machine import Pin
+import time
+
+green = Pin(13, Pin.OUT)
+yellow = Pin(14, Pin.OUT)
+red = Pin(15, Pin.OUT)
+
+def show(g, y, r, seconds):
+    green.value(g)
+    yellow.value(y)
+    red.value(r)
+    time.sleep(seconds)
+
+for cycle in range(3):
+    print("Cycle", cycle + 1)
+    show(1, 0, 0, 3)    # go
+    show(0, 1, 0, 1)    # get ready to stop
+    show(0, 0, 1, 3)    # stop
+
+red.off()
+`},
+ {name:'Blink with a Timer (no loop)', circuit:'blink', code:`from machine import Pin, Timer
+
+led = Pin(15, Pin.OUT)
+
+def tick(timer):
+    led.toggle()
+
+Timer(period=250, mode=Timer.PERIODIC, callback=tick)
+print("The timer keeps blinking the LED after the program ends.")
+print("Press Stop, or wait for the time limit.")
+`},
+ {name:'Servo sweep on GP16', circuit:'servo', code:`from machine import Pin, PWM
+import time
+
+servo = PWM(Pin(16))
+servo.freq(50)                  # a servo expects one pulse every 20 ms
+
+def set_angle(deg):
+    # 0.5 ms pulse = 0 degrees, 2.5 ms pulse = 180 degrees
+    pulse_us = 500 + deg / 180 * 2000
+    servo.duty_ns(int(pulse_us * 1000))
+
+for sweep in range(2):
+    for deg in range(0, 181, 10):
+        set_angle(deg)
+        time.sleep(0.05)
+    for deg in range(180, -1, -10):
+        set_angle(deg)
+        time.sleep(0.05)
+
+set_angle(90)
+print("Back to the middle")
+`},
+ {name:'Continuous servo: forward, stop, reverse', circuit:'crservo', code:`from machine import Pin, PWM
+import time
+
+servo = PWM(Pin(16), freq=50)
+
+def speed(percent):
+    # -100 = full reverse, 0 = stop, 100 = full forward
+    pulse_us = 1500 + percent * 5
+    servo.duty_ns(int(pulse_us * 1000))
+
+speed(100)
+print("Forward")
+time.sleep(2)
+speed(0)
+print("Stop")
+time.sleep(1)
+speed(-50)
+print("Half speed reverse")
+time.sleep(2)
+speed(0)
+`},
+ {name:'Raw PWM: motor forward and reverse', circuit:'motor', target:'driver', code:`# Kitronik Motor Driver Board (WNE robot wiring): motor 1 is GP12 forward, GP13 reverse
+from machine import Pin, PWM
+import time
+
+m1a = PWM(Pin(12), freq=1000)
+m1b = PWM(Pin(13), freq=1000)
+
+def motor1(speed):
+    """speed from -100 (full reverse) to 100 (full forward)"""
+    duty = int(abs(speed) / 100 * 65535)
+    if speed > 0:
+        m1a.duty_u16(duty)
+        m1b.duty_u16(0)
+    elif speed < 0:
+        m1a.duty_u16(0)
+        m1b.duty_u16(duty)
+    else:
+        m1a.duty_u16(0)     # both low = coast
+        m1b.duty_u16(0)
+
+motor1(80)
+print("Forward 80%")
+time.sleep(3)
+motor1(0)
+print("Stop")
+time.sleep(1)
+motor1(-80)
+print("Reverse 80%")
+time.sleep(3)
+motor1(0)
+print("Done")
+`},
+ {name:'Raw PWM: motor speed ramp', circuit:'motor', target:'driver', code:`from machine import Pin, PWM
+import time
+
+m1a = PWM(Pin(12), freq=1000)    # motor 1 forward
+m1b = PWM(Pin(13), freq=1000)    # motor 1 reverse
+m1b.duty_u16(0)
+
+for speed in range(0, 101, 5):          # speed up
+    m1a.duty_u16(int(speed / 100 * 65535))
+    print("Speed", speed, "%")
+    time.sleep(0.2)
+
+for speed in range(100, -1, -5):        # slow down
+    m1a.duty_u16(int(speed / 100 * 65535))
+    time.sleep(0.2)
+`},
+ {name:'Raw PWM: two motors with your own library (motor.py)', circuit:'twomotor', target:'driver', files:{'motor.py':MOTOR_LIB}, code:`# Drive like a robot using the Motor class from motor.py
+from motor import Motor, MOTOR1, MOTOR2
+import time
+
+left = Motor(MOTOR1)
+right = Motor(MOTOR2)
+
+steps = [
+    ("Forward",    70,  70),
+    ("Spin left", -60,  60),
+    ("Spin right", 60, -60),
+    ("Reverse",   -70, -70),
+]
+for label, l, r in steps:
+    print(label)
+    left.speed(l)
+    right.speed(r)
+    time.sleep(2)
+
+left.stop()
+right.stop()
+print("Stopped")
+`},
+ {name:'Raw PWM: stop the motor with a limit switch (GP0)', circuit:'limit', target:'driver', code:`# The motor runs until the micro switch is pressed.
+# Press and hold the switch on the board to stop it.
+from machine import Pin, PWM
+import time
+
+switch = Pin(0, Pin.IN, Pin.PULL_UP)    # COM -> GND, NO -> GP0
+m1a = PWM(Pin(12), freq=1000)            # motor 1 forward
+m1b = PWM(Pin(13), freq=1000)            # motor 1 reverse
+m1b.duty_u16(0)
+
+m1a.duty_u16(45000)
+print("Motor running. Press the micro switch to stop it.")
+while switch.value() == 1:      # 1 = not pressed (pulled up)
+    time.sleep_ms(20)
+
+m1a.duty_u16(0)
+print("Switch pressed: motor stopped.")
+`, tip:'Press Run, then press and hold the micro switch.'},
+ {name:'Report micro switch presses (GP14)', circuit:'micro', code:`from machine import Pin
+import time
+
+switch = Pin(14, Pin.IN, Pin.PULL_UP)
+last = switch.value()
+print("Press and release the micro switch on the board")
+
+while True:
+    now = switch.value()
+    if now != last:
+        print("Pressed" if now == 0 else "Released")
+        last = now
+    time.sleep_ms(10)
+`, tip:'Press Run, then press the micro switch on the board.'},
+ {name:'Thermistor temperature on ADC0 (GP26)', circuit:'therm', code:`# Read the 10K thermistor on ADC0 (GP26) and work out the temperature
+from machine import ADC
+import math, time
+
+adc = ADC(26)
+R_FIXED = 10000                     # the 10 kOhm resistor to GND
+R0, T0, BETA = 10000, 298.15, 3950  # thermistor data
+
+for i in range(20):
+    raw = adc.read_u16()
+    volts = raw / 65535 * 3.3
+    r_therm = R_FIXED * (3.3 - volts) / volts    # thermistor is on the 3V3 side
+    temp_c = 1 / (1 / T0 + math.log(r_therm / R0) / BETA) - 273.15
+    print("raw={:5d}  V={:.2f}  T={:.1f} C".format(raw, volts, temp_c))
+    time.sleep(0.5)
+`, tip:'While it runs, select the thermistor and move its temperature slider.'},
+ {name:'IR distance sensor on ADC0 (GP26)', circuit:'ir', code:`# Read the IR distance sensor on ADC0 (GP26)
+from machine import ADC
+import time
+
+ir = ADC(26)
+for i in range(30):
+    volts = ir.read_u16() / 65535 * 3.3
+    if volts > 0.35:
+        cm = 27.0 / (volts - 0.1)      # rough fit for the 10-80 cm sensor
+        print("Vo = {:.2f} V  ->  about {:.0f} cm".format(volts, cm))
+    else:
+        print("Vo = {:.2f} V  ->  nothing in range".format(volts))
+    time.sleep(0.5)
+`, tip:'While it runs, select the sensor and move the distance slider.'},
+];
+
+const WNE103_PY="import sys\ntry:\n    import ubinascii as binascii\nexcept:\n    import binascii\ntry:\n    import uhashlib as hashlib\nexcept:\n    import hashlib\nimport socket\nimport uos\nimport network\nimport uwebsocket\nimport time\nimport json\nimport machine\n\n#  constant used for the handshake\nDEBUG = 0\n\n#  functions used for the remote connection\ndef server_handshake(sock):\n    clr = sock.makefile(\"rwb\", 0)\n    l = clr.readline()\n    #sys.stdout.write(repr(l))\n\n    webkey = None\n\n    while 1:\n        l = clr.readline()\n        if not l:\n            raise OSError(\"EOF in headers\")\n        if l == b\"\\r\\n\":\n            break\n        h, v = [x.strip() for x in l.split(b\":\", 1)]\n        if DEBUG:\n            print((h, v))\n        if h == b'Sec-WebSocket-Key':\n            webkey = v\n\n    if not webkey:\n        raise OSError(\"Not a websocket request\")\n\n    if DEBUG:\n        print(\"Sec-WebSocket-Key:\", webkey, len(webkey))\n\n    d = hashlib.sha1(webkey)\n    d.update(b\"258EAFA5-E914-47DA-95CA-C5AB0DC85B11\")\n    respkey = d.digest()\n    respkey = binascii.b2a_base64(respkey)[:-1]\n    if DEBUG:\n        print(\"respkey:\", respkey)\n\n    sock.send(b\"\"\"\\\nHTTP/1.1 101 Switching Protocols\\r\nUpgrade: websocket\\r\nConnection: Upgrade\\r\nSec-WebSocket-Accept: \"\"\")\n    sock.send(respkey)\n    sock.send(\"\\r\\n\\r\\n\")\n\ndef client_handshake(sock):\n    cl = sock.makefile(\"rwb\", 0)\n    cl.write(b\"\"\"\\\nGET / HTTP/1.1\\r\nHost: echo.websocket.org\\r\nConnection: Upgrade\\r\nUpgrade: websocket\\r\nSec-WebSocket-Key: foo\\r\n\\r\n\"\"\")\n    l = cl.readline()\n\n    while 1:\n        l = cl.readline()\n        if l == b\"\\r\\n\":\n            break\n\nclass Controller_Server():\n\n    def __init__(self, AP_NAME, AP_PASSWORD):\n        self.port = 8765\n        self.listen_s = None\n        self.client_s = None\n        self.ws = None\n        self.wlan = None\n        self.ap_name = AP_NAME\n        self.ap_password = AP_PASSWORD\n        self.send_dict = {'Name':self.ap_name,'Type':'Blank','Check':'SunFounder Controller',}\n    \n    def setup_conn(self, accept_handler):\n        self.listen_s = socket.socket()\n        self.listen_s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)\n\n        ai = socket.getaddrinfo(\"0.0.0.0\", self.port)\n        addr = ai[0][4]\n\n        self.listen_s.bind(addr)\n        self.listen_s.listen(5)\n        if accept_handler:\n            self.listen_s.setsockopt(socket.SOL_SOCKET, 20, accept_handler)\n        for i in (network.AP_IF, network.STA_IF):\n            iface = network.WLAN(i)\n            if iface.active():\n                print(\"WebServer started on ws://%s:%d\" % (iface.ifconfig()[0], self.port))\n        return self.listen_s\n\n    def accept_conn(self, listen_sock):\n        cl, remote_addr = listen_sock.accept()\n        print(\"\\nWebSocket connection from:\", remote_addr)\n        self.client_s = cl\n        server_handshake(cl)\n        self.ws = uwebsocket.websocket(cl, True)\n        self.ws.write(json.dumps(self.send_dict))\n        print(\"have sended!\")\n        cl.setblocking(False)\n\n    def read(self):\n        if self.ws == None:\n            return None\n        recv = self.ws.read()\n        if recv != None and recv != b\"\":\n            recv = recv.decode()\n            # print(\"accept_conn: %s\" % recv)\n            try:\n                recv=json.loads(recv)\n                return recv\n            except ValueError:\n                pass\n        return None\n\n    def transfer(self):\n        result = self.read()\n        if result != None:\n            status = True\n            self.write()\n        else:\n            status = False    \n        return status,result\n\n    def write(self):\n        try:\n            value=json.dumps(self.send_dict)\n            value = value.encode(value)\n            self.ws.write(value)\n        except AttributeError:\n            pass\n            \n\n    def stop(self):\n        if self.client_s:\n            self.client_s.close()\n        if self.listen_s:\n            self.listen_s.close()\n        self.wlan.active(False)\n\n    def start(self):\n        self.wlan = network.WLAN(network.AP_IF)\n        self.wlan.config(essid=self.ap_name, password=self.ap_password)\n        self.wlan.active(True)  # turning on the hotspot\n                \n        self.setup_conn(self.accept_conn)\n\n    def start_foreground(self):\n        self.stop()\n        s = self.setup_conn(None)\n        self.accept_conn(s)\n        \nclass KitronikPicoMotor:\n    #Pins 4 and 5 motor 1\n    #Pins 9 and 10 motor 2\n    #'Forward' is P5 or P9 driven high, with P4 or P10 held low.\n    #'Reverse' is P4 or P10 driven high, with P5 or P9 held low\n   \n    #Driving the motor is simpler than the servo - just convert 0-100% to 0-4095 and push it to the correct registers.\n    #each motor has 4 writes - low and high bytes for a pair of registers. \n    def motorOn(self,motor, direction, speed):\n        #cap speed to 0-100%\n        if (speed<0):\n            speed = 0\n        elif (speed>100):\n            speed=100\n        #convert 0-100 to 0-65535\n        PWM = int(speed*655.35)\n        if motor == 1:\n            if direction == \"f\":\n                self.motor1Forward.duty_u16(PWM)\n                self.motor1Reverse.duty_u16(0)\n            elif direction == \"r\":\n                self.motor1Forward.duty_u16(0)\n                self.motor1Reverse.duty_u16(PWM)\n            else:\n                raise Exception(\"INVALID DIRECTION\") #harsh, but at least you'll know\n        elif motor == 2:\n            if direction == \"f\":\n                self.motor2Forward.duty_u16(PWM)\n                self.motor2Reverse.duty_u16(0)\n            elif direction == \"r\":\n                self.motor2Forward.duty_u16(0)\n                self.motor2Reverse.duty_u16(PWM)\n            else:\n                raise Exception(\"INVALID DIRECTION\") #harsh, but at least you'll know\n        else:\n            raise Exception(\"INVALID MOTOR\") #harsh, but at least you'll know\n    #To turn off set the speed to 0...\n    def motorOff(self,motor):\n        self.motorOn(motor,\"f\",0)\n\n    #defaults to the standard pins and freq for the kitronik board, but could be overridden\n    def __init__(self,Motor1ForwardPin = machine.Pin(12),Motor1ReversePin = machine.Pin(13),Motor2ForwardPin = machine.Pin(9),Motor2ReversePin = machine.Pin(8),PWMFreq = 10000):\n        self.motor1Forward=machine.PWM(Motor1ForwardPin)\n        self.motor1Reverse=machine.PWM(Motor1ReversePin)\n        self.motor2Forward=machine.PWM(Motor2ForwardPin)\n        self.motor2Reverse=machine.PWM(Motor2ReversePin)\n        self.motor1Forward.freq(PWMFreq)\n        self.motor1Reverse.freq(PWMFreq)\n        self.motor2Forward.freq(PWMFreq)\n        self.motor2Reverse.freq(PWMFreq)\n\n#  class for the servos\nclass Servo:\n\n    def __init__ (self, pin_number):\n        \n        self.servo_pwm = machine.PWM(machine.Pin(pin_number))\n        self.servo_pwm.freq(50)\n\n    def STServo(self, angle):\n        \n        #  duty cycles for standard servo (can change if needed)\n        min_duty = 1638\n        max_duty = 8192\n\n        #  maps the duty cycle for the given angle and turns the servo\n        duty = min_duty + int((angle / 180) * (max_duty - min_duty))\n        self.servo_pwm.duty_u16(duty)\n\n    def CONServo(self, power_or_duty, value):\n        \n        #  duty cycles for continous servo (can change if needed)\n        stop_duty = 5000    \n        cw_duty = 6500      \n        ccw_duty = 3500\n\n        #  calculates duty from power if duty was not set\n        if power_or_duty.lower() == \"power\":\n            duty = stop_duty + int((value/100) * (cw_duty - stop_duty))\n            print(duty)\n        elif power_or_duty.lower() == \"duty\":\n            duty = value\n        \n        #  makes the servo move\n        self.servo_pwm.duty_u16(duty)";
+const LIBS={'WNE103.py':WNE103_PY};
+const CODE_KEY='pico-bb-lab-code';
+let code={files:{'main.py':STARTERS[0].code}, active:'main.py', target:null};
+try{ const c=JSON.parse(localStorage.getItem(CODE_KEY)||'null'); if(c&&c.files&&typeof c.files['main.py']==='string'){ code=Object.assign(code,c); if(!(code.active in code.files)) code.active='main.py'; } }catch(e){}
+let mpRun=null, errLine=0, adding=false, delArmed=null;
+const edT=$('#edT'), edH=$('#edH'), edG=$('#edG'), con=$('#con');
+function saveCode(){ try{ localStorage.setItem(CODE_KEY,JSON.stringify(code)); }catch(e){} }
+
+/* editor */
+const PY_KW=new Set('and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield'.split(' '));
+const PY_CONST=new Set(['True','False','None']);
+const PY_BI=new Set('print range len int float str bool list dict tuple set abs min max round sum enumerate zip map filter sorted reversed isinstance type open input hex bin ord chr super object Exception ValueError TypeError KeyboardInterrupt self'.split(' '));
+function hlPy(src){ const re=/("""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?|#[^\n]*|\b0[xX][0-9a-fA-F]+\b|\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b|\b[A-Za-z_]\w*\b)/g;
+  let out='', last=0, m; while((m=re.exec(src))){ const w=m[0], off=m.index; out+=esc(src.slice(last,off)); last=off+w.length; const c0=w[0]; let k=null;
+    if(c0==='#') k='com'; else if(c0==='"'||c0==="'") k='str'; else if(/\d/.test(c0)) k='num'; else if(PY_KW.has(w)) k='kw'; else if(PY_CONST.has(w)) k='num'; else if(PY_BI.has(w)) k='fn'; else if(src[last]==='(') k='call';
+    out+= k?`<span class="t-${k}">${esc(w)}</span>`:esc(w); }
+  return out+esc(src.slice(last)); }
+function edRender(){ const v=edT.value; edH.innerHTML=hlPy(v)+'\n '; const n=v.split('\n').length; let g=''; for(let i=1;i<=n;i++) g+=(i===errLine?`<span class="err">${i}</span>`:i)+'\n'; edG.innerHTML=g; }
+function edInsert(text){ edT.focus(); let ok=false; try{ ok=text?document.execCommand('insertText',false,text):document.execCommand('delete'); }catch(e){}
+  if(!ok){ edT.setRangeText(text,edT.selectionStart,edT.selectionEnd,'end'); edT.dispatchEvent(new Event('input')); } }
+edT.addEventListener('input',()=>{ if(edT.readOnly) return; code.files[code.active]=edT.value; if(errLine){ errLine=0; } edRender(); saveCode(); });
+edT.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); runCode(); return; }
+  if(e.key==='Tab'){ e.preventDefault(); const v=edT.value, s=edT.selectionStart, en=edT.selectionEnd;
+    if(s===en&&!e.shiftKey){ edInsert('    '); return; }
+    const ls=v.lastIndexOf('\n',s-1)+1; let le=v.indexOf('\n',en>s&&v[en-1]==='\n'?en-1:en); if(le<0) le=v.length;
+    const block=v.slice(ls,le), nb=e.shiftKey?block.replace(/^ {1,4}/gm,''):block.replace(/^/gm,'    ');
+    edT.setSelectionRange(ls,le); edInsert(nb); edT.setSelectionRange(ls,ls+nb.length); return; }
+  if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey){ const v=edT.value, s=edT.selectionStart, ls=v.lastIndexOf('\n',s-1)+1, line=v.slice(ls,s);
+    let ind=(line.match(/^ */)||[''])[0]; if(/:\s*(#.*)?$/.test(line)) ind+='    '; else if(/^\s*(return|pass|break|continue|raise)\b/.test(line)) ind=ind.slice(0,Math.max(0,ind.length-4));
+    e.preventDefault(); edInsert('\n'+ind); return; }
+  if(e.key==='Backspace'&&edT.selectionStart===edT.selectionEnd){ const v=edT.value, s=edT.selectionStart, ls=v.lastIndexOf('\n',s-1)+1, pre=v.slice(ls,s);
+    if(pre.length>=4&&/^ +$/.test(pre)&&pre.length%4===0){ e.preventDefault(); edT.setSelectionRange(s-4,s); edInsert(''); } }
+});
+
+/* files */
+function openFile(name){ code.active=name; const lib=name.startsWith('@'); edT.readOnly=lib; edT.value=lib?(LIBS[name.slice(1)]||''):(code.files[name]??''); errLine=0; edRender(); renderFtabs(); saveCode(); }
+function renderFtabs(){ const names=Object.keys(code.files);
+  $('#ftabs').innerHTML = names.map(n=>`<span class="ftab${n===code.active?' on':''}" data-file="${esc(n)}">${esc(n)}${n!=='main.py'?`<button class="x${delArmed===n?' armed':''}" data-del="${esc(n)}" title="${delArmed===n?'Click again to delete':'Delete '+esc(n)}">${delArmed===n?'delete?':'×'}</button>`:''}</span>`).join('')
+    + Object.keys(LIBS).map(n=>`<span class="ftab lib${code.active==='@'+n?' on':''}" data-file="@${esc(n)}" title="Built-in class library (read-only). Import it with: import ${esc(n.replace(/\.py$/,''))}">${esc(n)} <small>built-in</small></span>`).join('')
+    + (adding?`<input class="fnew" id="fNew" placeholder="mylib.py" maxlength="40" aria-label="New file name">`:`<button class="ftab-add" data-fadd="1" title="Add a library file">+ File</button>`)
+    + `<button class="ftab-add" data-fup="1" title="Upload .py files from your computer">Upload .py</button>`;
+  if(adding) setTimeout(()=>$('#fNew')&&$('#fNew').focus()); }
+function addFile(name, src){ name=name.trim(); if(!name) return false; if(!/\.py$/.test(name)) name+='.py';
+  if(!/^[A-Za-z_][A-Za-z0-9_]*\.py$/.test(name)){ conSys(`"${name}" is not a valid module name. Use letters, digits and _ only, e.g. motor.py.`,'e'); return false; }
+  code.files[name]=src; openFile(name); return true; }
+$('#ftabs').addEventListener('click',e=>{ const del=e.target.closest('[data-del]');
+  if(del){ e.stopPropagation(); const n=del.dataset.del; if(delArmed===n){ delete code.files[n]; delArmed=null; if(code.active===n) code.active='main.py'; openFile(code.active); } else { delArmed=n; renderFtabs(); setTimeout(()=>{ if(delArmed===n){ delArmed=null; renderFtabs(); } },2500); } return; }
+  if(e.target.closest('[data-fadd]')){ adding=true; renderFtabs(); return; }
+  if(e.target.closest('[data-fup]')){ $('#fileUp').click(); return; }
+  const t=e.target.closest('[data-file]'); if(t&&t.dataset.file!==code.active) openFile(t.dataset.file); });
+$('#ftabs').addEventListener('keydown',e=>{ if(e.target.id!=='fNew') return; if(e.key==='Enter'){ const v=e.target.value; adding=false; if(!addFile(v,'# '+v.trim()+'\n')) renderFtabs(); } else if(e.key==='Escape'){ adding=false; renderFtabs(); } });
+$('#ftabs').addEventListener('focusout',e=>{ if(e.target.id==='fNew'&&adding){ setTimeout(()=>{ if(adding){ adding=false; renderFtabs(); } },150); } });
+$('#fileUp').addEventListener('change',e=>{ for(const file of e.target.files){ if(file.size>300000){ conSys(`${file.name} is too large (over 300 KB).`,'e'); continue; }
+  const r=new FileReader(); r.onload=()=>{ if(addFile(file.name.replace(/[^A-Za-z0-9_.]/g,'_'), String(r.result))) conSys(`Added ${file.name}. Import it by name, e.g. "import ${file.name.replace(/\.py$/,'')}".`); }; r.readAsText(file); } e.target.value=''; });
+
+/* console */
+function conAdd(lines, cls){ const atBottom=con.scrollTop+con.clientHeight>=con.scrollHeight-24; const frag=document.createDocumentFragment();
+  for(const s of lines){ const d=document.createElement('div'); if(cls) d.className=cls; d.textContent=s; frag.appendChild(d); }
+  con.appendChild(frag); while(con.childNodes.length>800) con.removeChild(con.firstChild); if(atBottom) con.scrollTop=con.scrollHeight; }
+const conSys=(s,c='s')=>conAdd([s],c);
+$('#bConClear').onclick=()=>{ con.textContent=''; };
+
+/* targets */
+const targets=()=>parts.filter(p=>p.type==='pico'||p.type==='driver');
+const tLabel=p=>p.type==='pico'?'Pico 2 WH on the breadboard':'Pico in the Kitronik driver';
+const gpioOf=p=>p.type==='pico'?p.props:p.props.pico;
+function renderTargets(){ const sel=$('#selTarget'), ts=targets(); if(!ts.some(p=>p.id===code.target)) code.target=ts.length?ts[0].id:null;
+  sel.innerHTML = ts.length ? ts.map(p=>`<option value="${p.id}"${p.id===code.target?' selected':''}>${tLabel(p)}${ts.filter(q=>q.type===p.type).length>1?' (#'+p.id+')':''}</option>`).join('') : '<option value="">no Pico on the bench</option>';
+  sel.disabled=!ts.length||!!mpRun; }
+$('#selTarget').onchange=e=>{ code.target=+e.target.value; saveCode(); };
+
+/* starters */
+$('#selStarter').innerHTML += STARTERS.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('');
+$('#selStarter').onchange=e=>{ const i=e.target.value; e.target.value=''; if(i!=='') askStarter(STARTERS[+i]); };
+function askStarter(s){ const box=$('#codeConfirm'); box.hidden=false;
+  box.innerHTML=`<span>Load “${esc(s.name)}”? It replaces main.py${s.files?' and adds '+esc(Object.keys(s.files).join(', ')):''}.</span>${s.circuit?'<label class="tog"><input type="checkbox" id="stCirc" checked> Also load its circuit</label>':''}<button class="btn primary" id="stYes">Load</button><button class="btn" id="stNo">Cancel</button>`;
+  $('#stNo').onclick=()=>{ box.hidden=true; };
+  $('#stYes').onclick=()=>{ const circ=s.circuit&&$('#stCirc')&&$('#stCirc').checked; box.hidden=true; if(mpRun) stopCode('stop'); if(circ) loadExample(s.circuit);
+    code.files['main.py']=s.code; if(s.files) Object.assign(code.files,s.files); const ts=targets(), t=ts.find(p=>p.type===(s.target||'pico'))||ts[0]; code.target=t?t.id:null;
+    openFile('main.py'); renderTargets(); conSys(`Loaded “${s.name}”. ${s.tip||'Press Run.'}`); }; }
+
+/* running */
+const liveInputs=()=>!!window.crossOriginIsolated&&typeof SharedArrayBuffer!=='undefined';
+function readInputs(pid){ const a=new Float64Array(40).fill(NaN); const pc=(sim.picos||[]).find(x=>x.pid===pid); if(!pc) return a; const g=sim.v(pc.IG);
+  for(let gp=0;gp<=29;gp++){ const n=PICO_NUM['GP'+gp]; if(!n) continue; const v=sim.v(pc.pin(n)); a[gp]=(v==null||g==null)?NaN:v-g; }
+  const cnt=v=>Number.isNaN(v)?NaN:Math.max(0,Math.min(3.3,v))/3.3*65535;
+  a[30]=cnt(a[26]); a[31]=cnt(a[27]); a[32]=cnt(a[28]); const vs=sim.v(pc.pin(39)); a[33]=cnt(vs==null||g==null?0:(vs-g)/3); a[34]=cnt(0.706);
+  return a; }
+function codeAfterSim(){ const p=committed(mpRun.pid); if(!p){ queueMicrotask(()=>mpRun&&stopCode('removed')); return; }
+  if(!(sim.parts[p.id]||{}).on){ queueMicrotask(()=>mpRun&&stopCode('power')); return; }
+  if(mpRun.sab) new Float64Array(mpRun.sab,0,40).set(readInputs(p.id)); }
+function runCode(){
+  if(mpRun) stopCode('restart');
+  setPane('code'); renderTargets(); const p=committed(code.target);
+  if(!p){ conSys('Add a Pico 2 WH or the Kitronik motor driver to the bench first.','e'); return; }
+  if(!(sim.parts[p.id]||{}).on){ conSys(p.type==='pico'?'The Pico has no power. Select it and tick "USB cable plugged in", or feed 1.8–5.5 V into VSYS.':'The docked Pico has no power. Switch the driver board on and connect 3–10.8 V to its POWER terminals.','e'); return; }
+  if(!edT.readOnly) code.files[code.active]=edT.value; saveCode(); errLine=0; edRender();
+  let worker; try{ worker=new Worker('mpy-worker.js',{type:'module'}); }catch(err){ conSys('MicroPython cannot start on this page: '+err.message,'e'); return; }
+  pushHist(); gpioOf(p).gpio={}; commit();               // like a soft reset: every pin starts as an input
+  const live=liveInputs(), sab=live?new SharedArrayBuffer(40*8+8):null;
+  mpRun={worker,pid:p.id,sab,live,t0:performance.now(),limit:(+$('#selLimit').value||60)*1000,started:false,pending:{},raf:0,lastInsp:0};
+  if(sab) new Float64Array(sab,0,40).set(readInputs(p.id));
+  worker.onmessage=onWorker;
+  worker.onerror=e=>{ e.preventDefault&&e.preventDefault(); conSys('MicroPython could not load'+(e.message?': '+e.message:'. Check your connection and reload the page.'),'e'); stopCode('fail'); };
+  worker.postMessage({t:'run', files:code.files, libs:LIBS, sab, inputs:sab?null:Array.from(readInputs(p.id))});
+  conSys(`>>> Running main.py on the ${tLabel(p)}…`);
+  mpRun.timer=setTimeout(()=>stopCode('limit'),mpRun.limit);
+  mpRun.tick=setInterval(updRunUI,200); updRunUI(); renderInspector(); renderTargets(); }
+function onWorker(e){ const m=e.data; if(!mpRun) return;
+  if(m.t==='started'){ mpRun.started=true; mpRun.t0=performance.now(); clearTimeout(mpRun.timer); mpRun.timer=setTimeout(()=>stopCode('limit'),mpRun.limit); updRunUI(); }
+  else if(m.t==='pins'){ Object.assign(mpRun.pending,m.pins); if(!mpRun.raf) mpRun.raf=setTimeout(applyPending,16); }
+  else if(m.t==='out'){ for(const l of m.lines) conAdd([l.s], l.k==='e'?'e':''); }
+  else if(m.t==='done'){ applyPending(); stopCode('done'); }
+  else if(m.t==='error'){ applyPending(); showPyError(m.msg); stopCode('error'); }
+  else if(m.t==='reset'){ applyPending(); stopCode('reset'); }
+  else if(m.t==='fatal'){ conSys('MicroPython failed to start: '+m.msg,'e'); stopCode('fail'); } }
+function applyPending(){ if(!mpRun) return; mpRun.raf=0; const pins=mpRun.pending; mpRun.pending={}; if(!Object.keys(pins).length) return;
+  const p=committed(mpRun.pid); if(!p) return; const g=gpioOf(p); g.gpio=g.gpio||{};
+  for(const [n,c] of Object.entries(pins)){ if(n==='LED') g.gpio.LED={m:c.m==='out1'?'out1':'out0'}; else if(GPIO_LIST.includes(n)) g.gpio[n]=c; }
+  simulate(); if(!mpRun) return; renderParts(); renderXray(); renderStatus(); updateReadouts(); if(paneTab==='sch') renderSchem();
+  if(sel===mpRun.pid&&performance.now()-mpRun.lastInsp>300){ mpRun.lastInsp=performance.now(); renderInspector(); } }
+function showPyError(msg){ const lines=String(msg).replace(/\s+$/,'').split('\n').filter(l=>!/File "<stdin>"/.test(l)); conAdd(lines,'e');
+  let file=null, line=0; for(const l of lines){ const mm=l.match(/File "\/?([^"]+)", line (\d+)/); if(mm){ file=mm[1]; line=+mm[2]; } }
+  const last=lines[lines.length-1]||'';
+  const mi=last.match(/ImportError: (?:no module named|can't import name) '?([\w.]+)'?/i); if(mi) conSys(`Hint: add ${mi[1]}.py with "+ File" or "Upload .py", or check the spelling.`);
+  if(/IndentationError/.test(last)) conSys('Hint: Python uses indentation for blocks. Line up the code under each ":" with 4 spaces.');
+  else if(/SyntaxError/.test(last)) conSys('Hint: check the marked line and the one above it for a missing ":", an unclosed bracket or quote, or code that is not indented under an if, for, while or def.');
+  if(file) file=file.replace(/^lib\//,'');
+  if(file&&line&&code.files[file]!==undefined){ if(code.active!==file) openFile(file); errLine=line; edRender(); }
+  else if(file&&line&&LIBS[file]!==undefined){ if(code.active!=='@'+file) openFile('@'+file); errLine=line; edRender(); } }
+function stopCode(reason){ const r=mpRun; if(!r) return; mpRun=null; try{ r.worker.terminate(); }catch(e){} clearTimeout(r.timer); clearInterval(r.tick); if(r.raf) clearTimeout(r.raf);
+  const secs=((performance.now()-r.t0)/1000).toFixed(1);
+  const msg={done:`Program finished after ${secs} s.`, stop:'Stopped. All pins were reset to inputs.', limit:`Time limit reached (${Math.round(r.limit/1000)} s). The program stopped and the pins were reset.`,
+    error:'The program stopped with an error, so the pins were reset.', power:'The Pico lost power, so the program stopped.', removed:'The Pico was removed, so the program stopped.',
+    reset:'machine.reset(): the Pico restarted and the pins were reset.'}[reason];
+  if(reason!=='done'&&reason!=='restart'){ const p=committed(r.pid); if(p) gpioOf(p).gpio={}; }
+  if(msg) conSys(msg, reason==='error'||reason==='power'?'e':'s');
+  if(reason!=='restart'){ commit(); renderInspector(); }
+  updRunUI(); renderTargets(); }
+function updRunUI(){ const on=!!mpRun; $('#bStop').disabled=!on; $('#bRun').textContent=on?'↻ Restart':'▶ Run'; $('#runPill').hidden=!on; $('#bCode').classList.toggle('running',on);
+  $('#codeStatus').textContent = on ? `${mpRun.started?'running':'starting'} · ${((performance.now()-mpRun.t0)/1000).toFixed(1)} s of ${Math.round(mpRun.limit/1000)} s` : ''; }
+$('#bRun').onclick=runCode; $('#bStop').onclick=()=>stopCode('stop');
+function codeShow(){ if(code.active.startsWith('@')) openFile(code.active); else if(edT.value!==(code.files[code.active]??'')){ edT.readOnly=false; edT.value=code.files[code.active]??''; } edRender(); renderFtabs(); renderTargets(); updRunUI();
+  const ln=$('#liveNote'); ln.textContent = liveInputs() ? 'live inputs on' : 'live inputs off here'; ln.title = liveInputs() ? 'A running program sees switch and sensor changes as they happen.' : 'On this page a running program sees switch and sensor values from when it started. Use the GitHub Pages link for live inputs.';
+  if(!con.childNodes.length) conSys('MicroPython 1.29 with a simulated machine module: Pin, PWM, ADC, Timer and time. The WNE103 class library is built in. Ctrl+Enter runs main.py.'); }
 
 /* ================= boot ================= */
 function boot(){
   renderDefs(); renderBoard(); renderBin();
   let loaded=false; try{ const s=localStorage.getItem('pico-bb-lab-v1'); if(s){ const o=JSON.parse(s); if(Array.isArray(o.parts)&&o.parts.every(p=>DEF[p.type])){ parts=o.parts; nextId=o.nextId||1+Math.max(0,...parts.map(p=>p.id)); loaded=true; } } }catch(e){}
   if(!loaded){ nextId=1; parts=EX.blink.build(); }
-  renderInspector(); commit(); fitView(); requestAnimationFrame(tick);
+  renderInspector(); commit(); setPane(paneTab); fitView(); requestAnimationFrame(tick);
   new ResizeObserver(()=>{ if(!stage.dataset.fitted){ fitView(); } }).observe(stage);
   setTimeout(()=>{ stage.dataset.fitted='1'; }, 600);
 }
