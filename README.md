@@ -17,9 +17,20 @@ A browser-based breadboard simulator for practising first-year circuit wiring an
   - Slide switch, micro switch
   - Standard (SG-5010) and continuous-rotation servos
   - IR distance sensor (10–80 cm), DC gear motor
-  - Bench power supply, AA battery pack (6 V), digital multimeter
+  - Bench power supply, AA battery pack (3, 4.5 or 6 V), digital multimeter
 - **Simulation:** DC circuit simulation with live voltages and currents. LEDs glow with current and burn out without a resistor. Short circuits, overloaded GPIO pins and 5 V on a Pico pin are flagged.
 - **MicroPython:** write and run real MicroPython on the simulated Pico. See below.
+- **Help for first-year students:**
+  - *Friendlier Python errors:* one plain sentence with a "did you mean…?" suggestion, the faulty line highlighted in the editor, and the full traceback tucked away.
+  - *Check before running:* common slips such as a missing `:`, unclosed brackets or `=` instead of `==` are caught before the program starts.
+  - *Check circuit:* one list of wiring problems, such as a backwards LED, no path to GND, an unpowered rail, a loose lead or a missing common ground. Click a problem to see it on the board.
+  - *Code and wiring cross-check:* for example, "Your code drives GP16, but nothing is wired to GP16. Your red LED is on GP15." The schematic also marks pins the code uses but nothing is wired to.
+  - *Trace connections:* click a pin or part (for example GP15 or D1) to highlight the whole path at once on the board, in the schematic and in the code, e.g. `Pin(15)` → GP15 → R1 → D1 → GND.
+  - *Show me:* every pin or part named in a message is a link that traces it.
+  - *Circuit health:* a checklist at the top of the Check tab (Pico powered, ground connected, resistor in series with each LED, floating inputs, code pins match the wiring).
+  - *Why?:* a short explanation beside each warning and Python error.
+  - *Live status:* hover a Pico pin for its mode and live state (e.g. `PWM 50 Hz, duty 7.5%`) or a part for its live readings.
+  - *Code from circuit:* writes the setup code for every part wired to the Pico (pins, WNE103 servos, `KitronikPicoMotor`), leaving students to write the logic.
 - **Multimeter:** DC volts, DC current (in series), resistance, continuity (with beep), diode test and PWM frequency.
 - **Live schematic:** draws itself from the breadboard wiring, with net labels and live voltages.
 - **Show strips:** reveals the hidden metal strips under the holes, coloured by voltage.

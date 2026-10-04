@@ -202,6 +202,64 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
 .console{flex:1 1 auto;overflow:auto;padding:6px 10px;font:12px/1.5 var(--font-mono);background:var(--con-bg);color:var(--con-fg);white-space:pre-wrap;overflow-wrap:anywhere;min-height:0}
 .console .e{color:var(--con-err)} .console .s{color:var(--con-sys)}
 
+/* trace, show me, health, why */
+.tracebar{position:absolute;left:50%;top:10px;transform:translateX(-50%);max-width:calc(100% - 20px);display:flex;align-items:center;gap:4px;flex-wrap:wrap;background:var(--panel);border:1px solid #e0891b;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.16);padding:6px 8px 6px 10px;z-index:5;font-size:12.5px}
+.tb-l{font-weight:700;color:#c46f0c;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
+.tb-s{border:1px solid var(--line);background:var(--chip);border-radius:6px;padding:3px 8px;cursor:pointer;font:500 12px var(--font-ui);color:inherit}
+.tb-s:hover{border-color:#e0891b}
+.tb-s.code{font-family:var(--font-mono);font-size:11.5px}
+.tb-s.note{border-style:dashed;cursor:default;color:var(--muted)}
+.tb-a{color:var(--muted)}
+.tb-sp{flex:1;min-width:8px}
+.tb-go{border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer;font-size:12px;padding:2px 6px}
+.ref{border:0;background:rgba(224,137,27,.16);color:inherit;border-radius:4px;padding:0 4px;font:600 0.95em var(--font-mono);cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px}
+.ref:hover{background:rgba(224,137,27,.32)}
+.why-b{border:0;background:none;color:var(--accent);font-weight:600;font-size:11.5px;cursor:pointer;padding:0;margin-right:10px}
+.ccard .why-b{color:#7fe3d3}
+.why-t{font-size:12px;margin-top:4px;padding:6px 8px;border-radius:6px;background:var(--accent-soft);color:var(--ink)}
+.ccard .why-t{background:rgba(127,227,211,.12);color:#d9e6e2}
+.show-b{border:0;background:none;color:#c46f0c;font-weight:600;font-size:11.5px;cursor:pointer;padding:0}
+.chk-acts{display:flex;gap:4px;margin-top:4px}
+.health{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:4px 10px;padding:4px 2px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.hrow{display:flex;gap:7px;align-items:baseline;text-align:left;border:0;background:none;padding:3px 4px;border-radius:6px;cursor:pointer;font-size:12.5px;color:inherit}
+.hrow:hover{background:var(--chip)}
+.hrow .hi{width:16px;flex:none;text-align:center;font-weight:700}
+.hrow.ok .hi{color:var(--ok)} .hrow.warn .hi{color:var(--warn)} .hrow.bad .hi{color:var(--bad)} .hrow.off .hi{color:var(--muted)}
+.tracebox{fill:none;stroke:#e0891b;stroke-width:2.5;stroke-dasharray:6 4;pointer-events:none}
+.ed-trace{position:absolute;left:0;right:0;background:rgba(224,137,27,.16);border-left:3px solid #e0891b;pointer-events:none}
+#sch .sch-trace .sw,#sch .sch-trace .sblk{stroke:#e0891b;stroke-width:2.6}
+#sch .spn.trace{fill:#e0891b;font-weight:700}
+.insp h2 .des{font:600 12px var(--font-mono);color:var(--muted);margin-left:6px}
+.gp-tr{font-size:11px}
+
+/* friendlier errors + circuit check */
+.ccard{border-left:3px solid var(--con-err);background:rgba(255,138,126,.09);padding:6px 9px;margin:5px 0;border-radius:4px;white-space:normal;font:12.5px/1.45 var(--font-ui)}
+.ccard.hint{border-color:#e8b34a;background:rgba(232,179,74,.1)}
+.cc-t{font-weight:600;color:#fff}
+.ccard code{font-family:var(--font-mono);font-size:11.5px;background:rgba(255,255,255,.1);padding:0 4px;border-radius:3px}
+.cc-h{color:#cfdcd8;margin-top:2px}
+.cc-loc{background:none;border:0;color:#7fe3d3;cursor:pointer;padding:0;font:600 11.5px var(--font-mono);text-decoration:underline;text-underline-offset:2px}
+.ccard details{margin-top:4px;color:#9fb2ad}.ccard summary{cursor:pointer;font-size:11.5px}
+.ccard pre{margin:4px 0 0;font:11px/1.45 var(--font-mono);white-space:pre-wrap;color:var(--con-err)}
+.ed-mark{position:absolute;left:0;right:0;background:rgba(220,40,30,.14);border-left:3px solid var(--bad);pointer-events:none}
+.ed-msg{position:absolute;font:600 11px/1.6 var(--font-ui);color:#fff;background:var(--bad);border-radius:4px;padding:0 7px;pointer-events:none;white-space:nowrap;z-index:2}
+.chk-head{display:flex;gap:10px;align-items:center;padding:7px 12px;border-bottom:1px solid var(--line);font-size:12.5px;flex-wrap:wrap}
+.chk-list{flex:1 1 auto;min-height:0;overflow:auto;padding:8px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.chk-grp{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:6px 0 0}
+.chk-item{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:9px;align-items:start;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;color:inherit}
+.chk-item:hover{border-color:var(--accent)}
+.chk-item .dot{width:10px;height:10px;border-radius:50%;margin-top:4px;background:var(--muted)}
+.chk-item.lv-bad .dot{background:var(--bad)}.chk-item.lv-warn .dot{background:var(--warn)}.chk-item.lv-tip .dot{background:var(--accent)}
+.chk-item small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.chk-item code{font-family:var(--font-mono);font-size:12px;background:var(--chip);padding:0 4px;border-radius:3px}
+.chk-go{font-size:11.5px;color:var(--accent);font-weight:600;white-space:nowrap;margin-top:1px}
+.chk-ok{padding:12px 14px;border-radius:8px;background:var(--accent-soft);font-weight:500;font-size:13px}
+.flashbox{fill:none;stroke:#ff9f1c;stroke-width:3;pointer-events:none;animation:flashp .55s ease-in-out 5 alternate}
+@keyframes flashp{from{stroke-opacity:1}to{stroke-opacity:.12}}
+#sch .spn.code{fill:var(--accent);font-weight:600}
+#sch .s-codeonly{stroke:var(--bad);stroke-dasharray:3 3;stroke-width:1.4}
+@media (prefers-reduced-motion: reduce){ .flashbox{animation:none} }
+
 /* stage + schematic split */
 .stagebox{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}
 .stagebox > .stage{flex:1 1 auto}
@@ -286,6 +344,7 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
     </div>
     <div class="tools">
       <button class="btn primary" id="bCh" title="Wiring challenges with automatic checking">Challenges</button>
+      <button class="btn" id="bCheck" title="List problems with the wiring and how it matches your code">Check circuit</button>
       <span class="sep"></span>
       <button class="btn" id="bUndo" title="Undo (Ctrl+Z)">Undo</button>
       <button class="btn" id="bRedo" title="Redo (Ctrl+Y)">Redo</button>
@@ -311,6 +370,7 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
       </svg>
       <div class="tip" id="tip" hidden></div>
       <div class="chcard" id="chcard" hidden></div>
+      <div class="tracebar" id="tracebar" hidden></div>
       <div class="legend" id="legend" hidden><span>Strip voltage</span><span class="lbar"></span><span>0 V → 9 V+</span><span class="lgrey"></span><span>no power</span></div>
       <div class="hint" id="hint">Drag parts from the bin. Drag from one hole to another to draw a wire. Scroll to zoom, drag empty space to pan.</div>
       <div class="zoom">
@@ -320,10 +380,14 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
       </div>
     </div>
       <div class="schem" id="schem" hidden>
-        <div class="pane-tabs"><button class="ptab" data-ptab="sch">Schematic</button><button class="ptab" data-ptab="code">MicroPython</button><span class="runpill" id="runPill" hidden>running</span><span style="flex:1"></span><button class="btn" id="bSchBig" style="padding:3px 10px">Expand</button><button class="iconbtn" id="bPaneX" aria-label="Close panel">✕</button></div>
+        <div class="pane-tabs"><button class="ptab" data-ptab="sch">Schematic</button><button class="ptab" data-ptab="code">MicroPython</button><button class="ptab" data-ptab="check">Check</button><span class="runpill" id="runPill" hidden>running</span><span style="flex:1"></span><button class="btn" id="bSchBig" style="padding:3px 10px">Expand</button><button class="iconbtn" id="bPaneX" aria-label="Close panel">✕</button></div>
         <div class="pane" id="paneSch">
           <div class="sch-head"><span class="note" id="schNote">Draws itself from your breadboard wiring. Labels with the same name are connected.</span><label class="tog"><input type="checkbox" id="cSchV" checked> Voltages</label></div>
           <svg id="sch" preserveAspectRatio="xMidYMin meet" aria-label="Schematic generated from the breadboard"></svg>
+        </div>
+        <div class="pane" id="paneCheck" hidden>
+          <div class="chk-head"><span class="note">Problems with the wiring, and how it matches your code. Click one to see where it is.</span><span style="flex:1"></span><button class="btn" id="bReCheck" style="padding:3px 10px">Check again</button></div>
+          <div class="chk-list" id="chkList"></div>
         </div>
         <div class="pane" id="paneCode" hidden>
           <div class="code-bar">
@@ -332,6 +396,7 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
             <label class="cb-l">Time limit <select class="in" id="selLimit"><option value="10">10 s</option><option value="30">30 s</option><option value="60" selected>60 s</option><option value="120">2 min</option><option value="300">5 min</option></select></label>
             <label class="cb-l">Runs on <select class="in" id="selTarget"></select></label>
             <select class="in" id="selStarter" aria-label="Load a starter program"><option value="">Starter programs…</option></select>
+            <button class="btn" id="bScaffold" title="Write setup code for every part wired to the Pico">Code from circuit</button>
             <span class="code-status" id="codeStatus"></span>
           </div>
           <div class="code-confirm" id="codeConfirm" hidden></div>
@@ -591,7 +656,7 @@ DEF.batt = { kind:'module', z:3, name:'AA battery pack', short:'AA battery pack'
     return `<g transform="translate(${p.x},${p.y})"><rect width="120" height="${n>2?58:36}" rx="6" fill="#111" stroke="#000"/>${cells}${txt(60,n>2?54:33,`${n}×AA · ${(1.5*n).toFixed(1)} V`,{fs:6.5,fill:'#bbb',a:'middle'})}</g>`+moduleCables(p,S)+endDots(p); },
   an(p,A,o){ const I=A.refs.v.I; o.leadI=[I,-I]; o.ro.push(['Voltage',(1.5*p.props.cells).toFixed(1)+' V nominal'],['Current',fmtI(I)]);
     if(I>2.5) A.warn('bad','The battery pack is shorted: a wire or part joins + straight to −.'); },
-  insp(p){ return `<div class="field"><h4>Cells</h4><div class="chips">${[2,4].map(n=>`<button class="chipb${p.props.cells===n?' on':''}" data-set="cells" data-val="${n}">${n}×AA · ${(1.5*n).toFixed(1)} V</button>`).join('')}</div></div>`; }
+  insp(p){ return `<div class="field"><h4>Cells</h4><div class="chips">${[2,3,4].map(n=>`<button class="chipb${p.props.cells===n?' on':''}" data-set="cells" data-val="${n}">${n}×AA · ${(1.5*n).toFixed(1)} V</button>`).join('')}</div></div>`; }
 };
 
 DEF.pico = { kind:'fixed', z:1, name:'Raspberry Pi Pico 2 WH', short:'Pico 2 WH', desc:'Straddle the centre channel (pins in rows c and h). The pin controls below stand in for your MicroPython code.',
@@ -984,6 +1049,10 @@ function drawOverlay(){
   if(drag&&drag.preview&&drag.started){ const p=drag.preview;
     if(DEF[p.type].kind==='fixed'){ for(const h of fixedPins(p)) s+=`<circle class="${drag.invalid?'snapbad':'snapok'}" cx="${h.c*P}" cy="${h.r*P}" r="7"/>`; }
     else for(const a of p.ends||[]){ const [x,y]=attPos(a); s+=`<circle class="${a.k==='f'?'snapfree':'snapok'}" cx="${x}" cy="${y}" r="8"/>`; } }
+  if(typeof flashSet!=='undefined'&&flashSet){ for(const pid of flashSet.pids){ const g=partsG.querySelector(`[data-pid="${pid}"]`); if(!g) continue; const b=g.getBBox(); s+=`<rect class="flashbox" x="${b.x-7}" y="${b.y-7}" width="${b.width+14}" height="${b.height+14}" rx="8"/>`; }
+    for(const [x,y] of flashSet.pts) s+=`<circle class="flashbox" cx="${x}" cy="${y}" r="11"/>`; }
+  if(typeof traceState!=='undefined'&&traceState){ for(const pid of traceState.pids){ const g=partsG.querySelector(`[data-pid="${pid}"]`); if(!g) continue; const b=g.getBBox(); s+=`<rect class="tracebox" x="${b.x-5}" y="${b.y-5}" width="${b.width+10}" height="${b.height+10}" rx="6"/>`; }
+    if(traceState.gp){ const pt=gpPoint(traceState.gp); if(pt) s+=`<circle class="tracebox" cx="${pt[0]}" cy="${pt[1]}" r="10"/>`; } }
   overG.innerHTML=s;
 }
 function applyView(){ worldG.setAttribute('transform',`translate(${view.tx},${view.ty}) scale(${view.s})`); }
@@ -1003,7 +1072,7 @@ function gpioPanel(p, base, props, only){
   h+=`<div class="gp"><div class="gp-top"><span class="gp-name">LED<small>on-board LED</small></span><select class="in" data-prop="${base}gpio.LED.m" data-rebuild="1"><option value="out0"${led.m!=='out1'?' selected':''}>Off</option><option value="out1"${led.m==='out1'?' selected':''}>On</option></select></div><div class="gp-code">${esc(CODE('LED',led))}</div></div>`;
   if(!pins.length) h+=`<p class="note">No GPIO pins are wired yet. Plug wires or parts into the Pico's rows to see them here.</p>`;
   for(const name of pins){ const cfg=props.gpio?.[name]||{m:'in'}; const lab = only ? (DRV_LABEL[name]||'') : (`pin ${PICO_NUM[name]}`+(name in ADC_CH?` · ADC${ADC_CH[name]}`:''));
-    h+=`<div class="gp"><div class="gp-top"><span class="gp-name">${name}<small>${lab}</small></span><select class="in" data-prop="${base}gpio.${name}.m" data-rebuild="1" aria-label="${name} mode">${opts.map(([v,t])=>`<option value="${v}"${cfg.m===v?' selected':''}>${t}</option>`).join('')}</select></div>`;
+    h+=`<div class="gp"><div class="gp-top"><span class="gp-name">${name} <button class="linkbtn gp-tr" data-trace="${name}" title="Trace ${name}">trace</button><small>${lab}</small></span><select class="in" data-prop="${base}gpio.${name}.m" data-rebuild="1" aria-label="${name} mode">${opts.map(([v,t])=>`<option value="${v}"${cfg.m===v?' selected':''}>${t}</option>`).join('')}</select></div>`;
     if(cfg.m==='pwm'){ const f=cfg.f??1000, d=cfg.d??50; h+=`<div class="gp-pwm"><label>Hz <input type="number" min="1" max="100000" value="${f}" data-prop="${base}gpio.${name}.f" data-rebuild="1"></label><input type="range" min="0" max="100" step="0.1" value="${d}" data-prop="${base}gpio.${name}.d" aria-label="duty"><span class="val" data-out="${base}gpio.${name}.d">${(+d).toFixed(1)}%</span>
       <button class="chipb" data-servo="${base}gpio.${name}">Servo 50 Hz</button></div>`; }
     h+=`<div class="gp-read" data-gpio="${name}">…</div><div class="gp-code" data-code="${base}|${name}">${esc(CODE(name,cfg))}</div></div>`; }
@@ -1021,11 +1090,11 @@ function renderInspector(){
     <li>Press <b>Code</b> to program the Pico in MicroPython, or select the Pico to set its pins by hand.</li>
     <li>Keys: <kbd>R</kbd> rotate, <kbd>Del</kbd> delete, <kbd>Ctrl</kbd>+<kbd>D</kbd> duplicate, <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo.</li></ol></div>
     <p class="note">Simulated at DC: PWM shows as its average voltage on LEDs and motors, and as a pulse width on servos. Your work saves in this browser.</p>`; return; }
-  const d=DEF[p.type]; let h=`<div><h2>${esc(d.name)}</h2><p class="sub">${esc(d.desc)}</p></div>`;
+  const d=DEF[p.type], dz=designators()[p.id]; let h=`<div><h2>${esc(d.name)}${dz?`<span class="des">${dz}</span>`:''}</h2><p class="sub">${esc(d.desc)}</p></div>`;
   h+=`<div class="wl" id="pwarn"></div>`;
   if(d.insp) h+=d.insp(p);
   h+=`<div><h4>Live readings</h4><dl class="ro" id="ro"></dl></div>`;
-  h+=`<div class="acts">${p.props.burnt?'<button class="btn primary" data-act="repair">Repair</button>':''}${d.kind!=='module'?'<button class="btn" data-act="rot">Rotate</button>':''}<button class="btn" data-act="dup">Duplicate</button><button class="btn" data-act="del">Delete</button></div>`;
+  h+=`<div class="acts">${p.props.burnt?'<button class="btn primary" data-act="repair">Repair</button>':''}${d.kind!=='module'?'<button class="btn" data-act="rot">Rotate</button>':''}${!['wire','pico','driver','psu','batt','meter'].includes(p.type)?'<button class="btn" data-act="trace" title="Highlight this part\'s connections to the Pico and your code">Trace</button>':''}<button class="btn" data-act="dup">Duplicate</button><button class="btn" data-act="del">Delete</button></div>`;
   insp.innerHTML=h; updateReadouts();
 }
 function updateReadouts(){
@@ -1036,11 +1105,13 @@ function updateReadouts(){
 }
 function renderStatus(){
   const st=$('#status'); const w=sim.warns, fl=sim.flashes; let h='';
-  const lv = w.some(x=>x.lv==='bad')||fl.length ? 'bad' : w.length ? 'warn' : 'ok';
+  let ci=[]; try{ ci=codeCircuitIssues().filter(x=>x.lv==='bad'); }catch(e){}
+  const lv = w.some(x=>x.lv==='bad')||fl.length||ci.length ? 'bad' : w.length ? 'warn' : 'ok';
   h+=`<span class="dot ${lv}"></span>`;
+  if(ci.length) h+=`<button data-check="1">${esc(ci[0].title)}${ci.length>1?` (+${ci.length-1} more)`:''}</button>`;
   if(fl.length) h+=fl.map(f=>`<button class="flash" data-pid="${f.pid}">${esc(f.msg)}</button>`).join('');
   if(w.length) h+=w.slice(0,3).map(x=>`<button data-pid="${x.pid}">${esc(x.msg)}</button>`).join('')+(w.length>3?`<span>+${w.length-3} more</span>`:'');
-  if(!w.length&&!fl.length){ const hasSrc=parts.some(p=>p.type==='psu'||p.type==='batt'||(p.type==='pico'&&p.props.usb)||(p.type==='driver')); h+=`<span>${parts.length} part${parts.length===1?'':'s'} · ${hasSrc?'no problems found':'add a power supply or plug in the Pico’s USB'}</span>`; }
+  if(!w.length&&!fl.length&&!ci.length){ const hasSrc=parts.some(p=>p.type==='psu'||p.type==='batt'||(p.type==='pico'&&p.props.usb)||(p.type==='driver')); h+=`<span>${parts.length} part${parts.length===1?'':'s'} · ${hasSrc?'no problems found':'add a power supply or plug in the Pico’s USB'}</span>`; }
   st.innerHTML=h;
 }
 
@@ -1051,7 +1122,7 @@ function restore(s){ const o=JSON.parse(s); parts=o.parts; nextId=o.nextId; if(s
 function undo(){ if(!undoS.length) return; redoS.push(snapshot()); restore(undoS.pop()); syncBtns(); }
 function redo(){ if(!redoS.length) return; undoS.push(snapshot()); restore(redoS.pop()); syncBtns(); }
 function saveLS(){ try{ localStorage.setItem('pico-bb-lab-v1', snapshot()); }catch(e){} }
-function commit(){ simulate(); renderParts(); renderXray(); renderSchem(); renderStatus(); updateReadouts(); saveLS(); syncBtns(); if(paneTab==='code') renderTargets(); if(chal&&chal.def&&chal.def.track) chal.def.track(chal); if(chal&&chal.def&&chal.checked) runCheck(); }
+function commit(){ simulate(); renderParts(); renderXray(); renderSchem(); renderStatus(); updateReadouts(); saveLS(); syncBtns(); if(paneTab==='code') renderTargets(); if(paneTab==='check') renderCheck(); if(traceState&&traceState.gp) traceGP(traceState.gp); if(chal&&chal.def&&chal.def.track) chal.def.track(chal); if(chal&&chal.def&&chal.checked) runCheck(); }
 function syncBtns(){ $('#bUndo').disabled=!undoS.length; $('#bRedo').disabled=!redoS.length; const p=committed(sel); $('#bDel').disabled=!p; $('#bRot').disabled=!p||DEF[p.type].kind==='module'; }
 function select(id){ if(sel===id) return; sel=id; renderInspector(); drawOverlay(); syncBtns(); renderSchem(); partsG.querySelectorAll('.part').forEach(g=>g.classList.toggle('sel', +g.dataset.pid===id)); }
 
@@ -1202,11 +1273,13 @@ function hover(e){
   const w=toWorld(e); let key=null, label='', node=null;
   const endEl=e.target.closest&&e.target.closest('[data-end]');
   if(endEl){ const [pid,i]=endEl.dataset.end.split(':').map(Number); const p=committed(pid); if(p){ node=nodeOf(p,i); label=`<b>${esc(DEF[p.type].short)}</b> · ${esc(DEF[p.type].pinNames[i])}`; const a=p.ends[i]; if(a.k==='h') label+=` · ${holeName(a.c,a.r)}`; if(a.k==='f') label+=' · not plugged in'; } }
+  else if((()=>{ const pe=e.target.closest&&e.target.closest('[data-pid]'); const pp=pe&&committed(+pe.dataset.pid); if(!pp||['pico','driver'].includes(pp.type)) return false;
+      tip.innerHTML=partStatusHTML(pp); tip.hidden=false; const r=stage.getBoundingClientRect(); let x=e.clientX-r.left+14, y=e.clientY-r.top+14; if(x>r.width-240) x=e.clientX-r.left-250; if(y>r.height-80) y=e.clientY-r.top-80; tip.style.left=x+'px'; tip.style.top=y+'px'; hlG.innerHTML=''; return true; })()) return;
   else { const pt=snapPt(w.x,w.y,EMPTY,null,null,10);
     if(pt){ if(pt.k==='h'){ node=stripKey(pt.c,pt.r); label=`<b>${holeName(pt.c,pt.r)}</b>`; } else { node=`T${pt.p}.${pt.i}`; const m=committed(pt.p); label=`<b>${esc(DEF[m.type].short)}</b> · ${esc(DEF[m.type].terms[pt.i][2])}`; }
-      const occ=buildOcc(null).get(attKey(pt)); if(occ) label+=` · ${esc(DEF[occ.p.type].short)} ${esc(DEF[occ.p.type].pinNames[occ.i])}`; } }
+      const occ=buildOcc(null).get(attKey(pt)); if(occ){ label+=` · ${esc(DEF[occ.p.type].short)} ${esc(DEF[occ.p.type].pinNames[occ.i])}`; const pn=occ.p.type==='pico'?PICO_PINS[occ.i+1]:null; if(pn&&PICO_NUM[pn]) label+=`<br>${esc(gpioStatus(occ.p,pn))}`; } } }
   if(!node){ hideTip(); hlG.innerHTML=''; return; }
-  const v=sim.v(node); label+=`<br>${v==null?'not powered':v.toFixed(2)+' V (vs ground)'}`;
+  const v=sim.v(node), empty=!parts.some(q=>partAtts(q).some((a,i)=>nodeOf(q,i)===node)); label+=`<br>${empty?'nothing plugged in here':v==null?'not powered':v.toFixed(2)+' V (vs ground)'}`;
   // highlight strip & net
   const root=sim.net(node); let s='';
   for(let r=0;r<=17;r++) for(let c=1;c<=COLS;c++){ if(!isHole(c,r)) continue; const k=stripKey(c,r); if(k===node) s+=`<rect class="hl-strip" x="${c*P-5.5}" y="${r*P-5.5}" width="11" height="11" rx="2"/>`; else if(sim.net(k)===root) s+=`<rect class="hl-net" x="${c*P-5.5}" y="${r*P-5.5}" width="11" height="11" rx="2"/>`; }
@@ -1236,8 +1309,9 @@ insp.addEventListener('change', e=>{ const el=e.target; if(el.id==='gpf'){ gpioF
 insp.addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b) return; const p=committed(sel); if(!p) return;
   if(b.dataset.set){ pushHist(); let v=b.dataset.val; if(!isNaN(+v)&&v.trim()!=='') v=+v; setPath(p.props,b.dataset.set,v); commit(); renderInspector(); return; }
   if(b.dataset.servo){ pushHist(); const c=getPath(p.props,b.dataset.servo); c.f=50; c.d=7.5; commit(); renderInspector(); return; }
-  const a=b.dataset.act; if(a==='del') deletePart(p.id); else if(a==='rot') rotatePart(p.id); else if(a==='dup') duplicatePart(p.id); else if(a==='repair'){ pushHist(); p.props.burnt=false; commit(); renderInspector(); } });
-$('#status').addEventListener('click', e=>{ const b=e.target.closest('[data-pid]'); if(b&&b.dataset.pid!=='null'){ select(+b.dataset.pid); } });
+  if(b.dataset.trace){ traceGP(b.dataset.trace); return; }
+  const a=b.dataset.act; if(a==='trace'){ traceFromPart(p.id); return; } if(a==='del') deletePart(p.id); else if(a==='rot') rotatePart(p.id); else if(a==='dup') duplicatePart(p.id); else if(a==='repair'){ pushHist(); p.props.burnt=false; commit(); renderInspector(); } });
+$('#status').addEventListener('click', e=>{ if(e.target.closest('[data-check]')){ setPane('check'); return; } const b=e.target.closest('[data-pid]'); if(b&&b.dataset.pid!=='null'){ select(+b.dataset.pid); } });
 
 /* toolbar */
 $('#bUndo').onclick=undo; $('#bRedo').onclick=redo;
@@ -1259,7 +1333,7 @@ window.addEventListener('keydown', e=>{
     if(drag&&drag.started&&drag.mode==='body'&&DEF[drag.preview.type].kind==='fixed'){ drag.preview.rot=((drag.preview.rot||0)+1)%4; drag.invalid=!fixedValid(drag.preview,drag.occ); renderParts(); return; }
     if(sel!=null) rotatePart(sel); return; }
   if(k==='delete'||k==='backspace'){ if(sel!=null){ e.preventDefault(); deletePart(sel); } return; }
-  if(k==='escape'){ if(drag) cancelDrag(); else select(null); }
+  if(k==='escape'){ if(drag) cancelDrag(); else if(traceState) clearTrace(); else select(null); }
 });
 
 /* ================= animation loop ================= */
@@ -1582,7 +1656,7 @@ $('#selEx').onchange=e=>{ if(e.target.value) loadExample(e.target.value); e.targ
 
 /* ================= schematic ================= */
 let paneTab=null, schV=true;
-try{ const t=localStorage.getItem('pico-bb-lab-pane'); paneTab = t==='sch'||t==='code' ? t : (localStorage.getItem('pico-bb-lab-sch')==='1'?'sch':null); }catch(e){}
+try{ const t=localStorage.getItem('pico-bb-lab-pane'); paneTab = t==='sch'||t==='code'||t==='check' ? t : (localStorage.getItem('pico-bb-lab-sch')==='1'?'sch':null); }catch(e){}
 const DESIG={resistor:'R',led:'D',thermistor:'TH',motor:'M',psu:'BT',pico:'U',driver:'U',reg:'U',servo:'SV',crservo:'SV',ir:'IR',micro:'SW',slide:'SW',batt:'BT'};
 const TWO=new Set(['resistor','led','thermistor','motor','psu','batt']);
 const srcVolts=p=>p.type==='batt'?1.5*p.props.cells:+p.props.volts;
@@ -1640,6 +1714,7 @@ function schModel(){
   // blocks
   const blocks=items.filter(p=>!TWO.has(p.type)).map(p=>{ let P=pins[p.id];
     if(p.type==='pico'||p.type==='driver'){ const g=P.filter(x=>(x.nm==='GND'||x.nm==='AGND'||x.nm==='VIN−')&&used(x.net)); P=P.filter(x=>used(x.net)&&!['GND','AGND','VIN−'].includes(x.nm)); if(g.length) P.push({...g[0],nm:'GND',r:false}); }
+    if(p.type==='pico'&&p.id===code.target){ const have=new Set(P.map(x=>x.nm)); for(const u of codePins(code.files['main.py']||'')){ const nm='GP'+u.gp; if(!PICO_NUM[nm]||have.has(nm)) continue; have.add(nm); P.push({nm,net:null,codeOnly:true,r:PICO_NUM[nm]>20}); } }
     return {p, L:P.filter(x=>!x.r), R:P.filter(x=>x.r)}; });
   return {des,conns,repK,names,kind,nameOf,chains,blocks,gnds};
 }
@@ -1655,7 +1730,7 @@ function schSym(e,x,y,flip,des){ const p=e.p, t=p.type, S=sim.parts[p.id]||{}; l
     s+=`<line x1="${x}" y1="${y+14}" x2="${x}" y2="${y+24}" class="sw"/><line x1="${x}" y1="${y+32}" x2="${x}" y2="${y+42}" class="sw"/>`+(!flip? pl(y+24,26,1.6)+pl(y+32,13,3.2) : pl(y+24,13,3.2)+pl(y+32,26,1.6));
     s+=`<text x="${x-20}" y="${!flip?y+22:y+40}" text-anchor="middle" font-weight="700">+</text>`; val=`${srcVolts(p).toFixed(1)} V`; }
   const lx = t==='led' ? x+22 : x+16;
-  return `<g class="sp${p.id===sel?' sch-sel':''}" data-pid="${p.id}"><rect class="shit" x="${x-16}" y="${y+10}" width="${70}" height="36"/>${s}<text x="${lx}" y="${y+26}" class="sdes">${des[p.id]}</text>${val?`<text x="${lx}" y="${y+38}" class="sm">${esc(val)}</text>`:''}</g>`; }
+  return `<g class="sp${p.id===sel?' sch-sel':''}${traceState&&traceState.pids.has(p.id)?' sch-trace':''}" data-pid="${p.id}"><rect class="shit" x="${x-16}" y="${y+10}" width="${70}" height="36"/>${s}<text x="${lx}" y="${y+26}" class="sdes">${des[p.id]}</text>${val?`<text x="${lx}" y="${y+38}" class="sm">${esc(val)}</text>`:''}</g>`; }
 function renderSchem(){
   if(paneTab!=='sch') return; const svg=$('#sch'), note=$('#schNote');
   if(!parts.some(p=>DESIG[p.type])){ svg.setAttribute('viewBox','0 0 420 80'); svg.innerHTML='<text x="210" y="44" text-anchor="middle" class="sm">Place parts and wire them up. The schematic draws itself here.</text>'; note.className='note'; note.textContent='Draws itself from your breadboard wiring. Labels with the same name are connected.'; return; }
@@ -1675,9 +1750,14 @@ function renderSchem(){
   for(const b of M.blocks){ const p=b.p, S=sim.parts[p.id]||{}; const n=Math.max(b.L.length,b.R.length,1), h=40+n*18;
     let sub=''; if(p.type==='pico') sub=S.on?'running':'no power'; else if(p.type==='driver') sub=[S.m1,S.m2].filter(Boolean).join(' · '); else if(p.type==='micro') sub=(p._pressed||p.props.latched)?'pressed: COM–NO':'at rest: COM–NC';
     else if(p.type==='slide') sub=p.props.pos?'C–3':'C–1'; else if(p.type==='reg') sub=S.st==='reg'?'regulating':S.st==='drop'?'dropout':'no input'; else sub=S.badge||'';
-    s+=`<g class="sp${p.id===sel?' sch-sel':''}" data-pid="${p.id}"><rect x="${bx}" y="${by}" width="${bw}" height="${h}" rx="5" class="sblk"/><text x="${bx+8}" y="${by+15}"><tspan class="sdes">${M.des[p.id]}</tspan> ${esc(BLK_TITLE[p.type])}</text><text x="${bx+8}" y="${by+28}" class="sm">${esc(sub)}</text>`;
-    b.L.forEach((x,i)=>{ const y=by+44+i*18; s+=`<line x1="${bx-24}" y1="${y}" x2="${bx}" y2="${y}" class="sw"/><text x="${bx+6}" y="${y+3.5}" class="spn">${esc(x.nm)}</text>`+endH(x.net,bx-24,y,-1); });
-    b.R.forEach((x,i)=>{ const y=by+44+i*18; s+=`<line x1="${bx+bw}" y1="${y}" x2="${bx+bw+24}" y2="${y}" class="sw"/><text x="${bx+bw-6}" y="${y+3.5}" text-anchor="end" class="spn">${esc(x.nm)}</text>`+endH(x.net,bx+bw+24,y,1); });
+    s+=`<g class="sp${p.id===sel?' sch-sel':''}${traceState&&traceState.pids.has(p.id)?' sch-trace':''}" data-pid="${p.id}"><rect x="${bx}" y="${by}" width="${bw}" height="${h}" rx="5" class="sblk"/><text x="${bx+8}" y="${by+15}"><tspan class="sdes">${M.des[p.id]}</tspan> ${esc(BLK_TITLE[p.type])}</text><text x="${bx+8}" y="${by+28}" class="sm">${esc(sub)}</text>`;
+    const cu = p.id===code.target ? new Set(codePins(code.files['main.py']||'').map(u=>'GP'+u.gp)) : new Set();
+    b.L.forEach((x,i)=>{ const y=by+44+i*18, cc=(cu.has(x.nm)?' code':'')+(traceState&&traceState.gp===x.nm&&p.id===(tracePico()||{}).p?.id?' trace':'');
+      if(x.codeOnly){ s+=`<line x1="${bx-24}" y1="${y}" x2="${bx}" y2="${y}" class="s-codeonly"/><text x="${bx+6}" y="${y+3.5}" class="spn code">${esc(x.nm)}</text><text x="${bx-28}" y="${y+3.5}" text-anchor="end" class="snc-t">in code, not wired</text>`; bump(bx-130,y-6,bx,y+6); return; }
+      s+=`<line x1="${bx-24}" y1="${y}" x2="${bx}" y2="${y}" class="sw"/><text x="${bx+6}" y="${y+3.5}" class="spn${cc}">${esc(x.nm)}</text>`+endH(x.net,bx-24,y,-1); });
+    b.R.forEach((x,i)=>{ const y=by+44+i*18, cc=(cu.has(x.nm)?' code':'')+(traceState&&traceState.gp===x.nm&&p.id===(tracePico()||{}).p?.id?' trace':'');
+      if(x.codeOnly){ s+=`<line x1="${bx+bw}" y1="${y}" x2="${bx+bw+24}" y2="${y}" class="s-codeonly"/><text x="${bx+bw-6}" y="${y+3.5}" text-anchor="end" class="spn code">${esc(x.nm)}</text><text x="${bx+bw+28}" y="${y+3.5}" class="snc-t">in code, not wired</text>`; bump(bx+bw,y-6,bx+bw+130,y+6); return; }
+      s+=`<line x1="${bx+bw}" y1="${y}" x2="${bx+bw+24}" y2="${y}" class="sw"/><text x="${bx+bw-6}" y="${y+3.5}" text-anchor="end" class="spn${cc}">${esc(x.nm)}</text>`+endH(x.net,bx+bw+24,y,1); });
     if(!b.L.length&&!b.R.length) s+=`<text x="${bx+8}" y="${by+50}" class="snc-t">no pins wired yet</text>`;
     s+='</g>'; bump(bx,by,bx+bw,by+h); by+=h+36; }
   // chains, in columns
@@ -1695,15 +1775,16 @@ function renderSchem(){
 }
 $('#sch').addEventListener('click', e=>{ const g=e.target.closest('[data-pid]'); select(g?+g.dataset.pid:null); });
 function setPane(t){ const was=paneTab; paneTab=t; try{ localStorage.setItem('pico-bb-lab-pane',t||''); }catch(_){}
-  $('#schem').hidden=!t; $('#paneSch').hidden=t!=='sch'; $('#paneCode').hidden=t!=='code';
+  $('#schem').hidden=!t; $('#paneSch').hidden=t!=='sch'; $('#paneCode').hidden=t!=='code'; $('#paneCheck').hidden=t!=='check'; $('#bCheck').classList.toggle('on',t==='check');
   document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('on',b.dataset.ptab===t));
   $('#bSch').classList.toggle('on',t==='sch'); $('#bCode').classList.toggle('on',t==='code');
-  if(t==='sch') renderSchem(); if(t==='code') codeShow();
+  if(t==='sch') renderSchem(); if(t==='code') codeShow(); if(t==='check') renderCheck();
   if(!!was!==!!t) requestAnimationFrame(fitView); }
 $('#bSch').onclick=()=>setPane(paneTab==='sch'?null:'sch');
 $('#bCode').onclick=()=>setPane(paneTab==='code'?null:'code');
 document.querySelectorAll('.ptab').forEach(b=>{ b.onclick=()=>setPane(b.dataset.ptab); });
 $('#bPaneX').onclick=()=>setPane(null);
+$('#bCheck').onclick=()=>setPane(paneTab==='check'?null:'check');
 $('#cSchV').onchange=e=>{ schV=e.target.checked; renderSchem(); };
 $('#bSchBig').onclick=()=>{ const b=$('#schem').classList.toggle('big'); $('#bSchBig').textContent=b?'Shrink':'Expand'; requestAnimationFrame(fitView); };
 
@@ -2058,10 +2139,10 @@ function hlPy(src){ const re=/("""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.
     if(c0==='#') k='com'; else if(c0==='"'||c0==="'") k='str'; else if(/\d/.test(c0)) k='num'; else if(PY_KW.has(w)) k='kw'; else if(PY_CONST.has(w)) k='num'; else if(PY_BI.has(w)) k='fn'; else if(src[last]==='(') k='call';
     out+= k?`<span class="t-${k}">${esc(w)}</span>`:esc(w); }
   return out+esc(src.slice(last)); }
-function edRender(){ const v=edT.value; edH.innerHTML=hlPy(v)+'\n '; const n=v.split('\n').length; let g=''; for(let i=1;i<=n;i++) g+=(i===errLine?`<span class="err">${i}</span>`:i)+'\n'; edG.innerHTML=g; }
+function edRender(){ const v=edT.value; edH.innerHTML=hlPy(v)+'\n '; const n=v.split('\n').length; let g=''; for(let i=1;i<=n;i++) g+=(i===errLine?`<span class="err">${i}</span>`:i)+'\n'; edG.innerHTML=g; if(typeof edMarkRender==='function') edMarkRender(); }
 function edInsert(text){ edT.focus(); let ok=false; try{ ok=text?document.execCommand('insertText',false,text):document.execCommand('delete'); }catch(e){}
   if(!ok){ edT.setRangeText(text,edT.selectionStart,edT.selectionEnd,'end'); edT.dispatchEvent(new Event('input')); } }
-edT.addEventListener('input',()=>{ if(edT.readOnly) return; code.files[code.active]=edT.value; if(errLine){ errLine=0; } edRender(); saveCode(); });
+let _stT=0; edT.addEventListener('input',()=>{ if(edT.readOnly) return; code.files[code.active]=edT.value; clearTimeout(_stT); _stT=setTimeout(()=>{ renderStatus(); if(paneTab==='sch') renderSchem(); },600); if(errLine){ errLine=0; errMsg=''; } edRender(); saveCode(); });
 edT.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){ e.preventDefault(); runCode(); return; }
   if(e.key==='Tab'){ e.preventDefault(); const v=edT.value, s=edT.selectionStart, en=edT.selectionEnd;
@@ -2138,7 +2219,11 @@ function runCode(){
   setPane('code'); renderTargets(); const p=committed(code.target);
   if(!p){ conSys('Add a Pico 2 WH or the Kitronik motor driver to the bench first.','e'); return; }
   if(!(sim.parts[p.id]||{}).on){ conSys(p.type==='pico'?'The Pico has no power. Select it and tick "USB cable plugged in", or feed 1.8–5.5 V into VSYS.':'The docked Pico has no power. Switch the driver board on and connect 3–10.8 V to its POWER terminals.','e'); return; }
-  if(!edT.readOnly) code.files[code.active]=edT.value; saveCode(); errLine=0; edRender();
+  if(!edT.readOnly) code.files[code.active]=edT.value; saveCode(); errLine=0; errMsg=''; edRender();
+  const lint=lintPy(code.files['main.py']||'').filter(x=>(x.lv||'bad')==='bad');
+  if(lint.length){ const l=lint[0]; conCard({title:l.title,hint:l.hint,loc:{file:'main.py',line:l.line},why:whyLint(l.title)}); markLine('main.py',l.line,l.title); conSys('Fix this line, then press Run again.'); return; }
+  const pre=codeCircuitIssues().filter(x=>x.lv==='bad');
+  if(pre.length) conCard({title:pre[0].title,hint:pre[0].hint,loc:pre[0].line?{file:'main.py',line:pre[0].line}:null,why:whyFor(pre[0].title)},'hint');
   let worker; try{ worker=new Worker('mpy-worker.js',{type:'module'}); }catch(err){ conSys('MicroPython cannot start on this page: '+err.message,'e'); return; }
   pushHist(); gpioOf(p).gpio={}; commit();               // like a soft reset: every pin starts as an input
   const live=liveInputs(), sab=live?new SharedArrayBuffer(40*8+8):null;
@@ -2163,15 +2248,7 @@ function applyPending(){ if(!mpRun) return; mpRun.raf=0; const pins=mpRun.pendin
   for(const [n,c] of Object.entries(pins)){ if(n==='LED') g.gpio.LED={m:c.m==='out1'?'out1':'out0'}; else if(GPIO_LIST.includes(n)) g.gpio[n]=c; }
   simulate(); if(!mpRun) return; renderParts(); renderXray(); renderStatus(); updateReadouts(); if(paneTab==='sch') renderSchem();
   if(sel===mpRun.pid&&performance.now()-mpRun.lastInsp>300){ mpRun.lastInsp=performance.now(); renderInspector(); } }
-function showPyError(msg){ const lines=String(msg).replace(/\s+$/,'').split('\n').filter(l=>!/File "<stdin>"/.test(l)); conAdd(lines,'e');
-  let file=null, line=0; for(const l of lines){ const mm=l.match(/File "\/?([^"]+)", line (\d+)/); if(mm){ file=mm[1]; line=+mm[2]; } }
-  const last=lines[lines.length-1]||'';
-  const mi=last.match(/ImportError: (?:no module named|can't import name) '?([\w.]+)'?/i); if(mi) conSys(`Hint: add ${mi[1]}.py with "+ File" or "Upload .py", or check the spelling.`);
-  if(/IndentationError/.test(last)) conSys('Hint: Python uses indentation for blocks. Line up the code under each ":" with 4 spaces.');
-  else if(/SyntaxError/.test(last)) conSys('Hint: check the marked line and the one above it for a missing ":", an unclosed bracket or quote, or code that is not indented under an if, for, while or def.');
-  if(file) file=file.replace(/^lib\//,'');
-  if(file&&line&&code.files[file]!==undefined){ if(code.active!==file) openFile(file); errLine=line; edRender(); }
-  else if(file&&line&&LIBS[file]!==undefined){ if(code.active!=='@'+file) openFile('@'+file); errLine=line; edRender(); } }
+function showPyError(msg){ const info=explainPy(msg); conCard(info); if(info.loc) markLine(info.loc.file,info.loc.line,info.title); }
 function stopCode(reason){ const r=mpRun; if(!r) return; mpRun=null; try{ r.worker.terminate(); }catch(e){} clearTimeout(r.timer); clearInterval(r.tick); if(r.raf) clearTimeout(r.raf);
   const secs=((performance.now()-r.t0)/1000).toFixed(1);
   const msg={done:`Program finished after ${secs} s.`, stop:'Stopped. All pins were reset to inputs.', limit:`Time limit reached (${Math.round(r.limit/1000)} s). The program stopped and the pins were reset.`,
@@ -2187,6 +2264,387 @@ $('#bRun').onclick=runCode; $('#bStop').onclick=()=>stopCode('stop');
 function codeShow(){ if(code.active.startsWith('@')) openFile(code.active); else if(edT.value!==(code.files[code.active]??'')){ edT.readOnly=false; edT.value=code.files[code.active]??''; } edRender(); renderFtabs(); renderTargets(); updRunUI();
   const ln=$('#liveNote'); ln.textContent = liveInputs() ? 'live inputs on' : 'live inputs off here'; ln.title = liveInputs() ? 'A running program sees switch and sensor changes as they happen.' : 'On this page a running program sees switch and sensor values from when it started. Use the GitHub Pages link for live inputs.';
   if(!con.childNodes.length) conSys('MicroPython 1.29 with a simulated machine module: Pin, PWM, ADC, Timer and time. The WNE103 class library is built in. Ctrl+Enter runs main.py.'); }
+
+/* ================= helpers: explain errors, check the circuit, link code and wiring ================= */
+const cap1=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const fmtMsg=s=>linkRefs(esc(s).replace(/`([^`]+)`/g,'<code>$1</code>'));
+function editDist(a,b){ a=a.toLowerCase(); b=b.toLowerCase(); const m=a.length, n=b.length; if(Math.abs(m-n)>3) return 9;
+  const d=Array.from({length:m+1},(_,i)=>[i]); for(let j=1;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++) { d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1)); if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1); }
+  return d[m][n]; }
+function closest(word,cands){ let best=null, bd=9; const lim=word.length<=3?1:2; for(const c of cands){ if(c===word) continue; const dd=editDist(word,c); if(dd<=lim&&dd<bd){ bd=dd; best=c; } } return best; }
+const API_ATTRS=['value','on','off','toggle','high','low','init','irq','freq','duty_u16','duty_ns','deinit','read_u16','STServo','CONServo','motorOn','motorOff','sleep','sleep_ms','sleep_us','ticks_ms','ticks_us','ticks_diff','ticks_add','time','Pin','PWM','ADC','Timer','reset','IN','OUT','PULL_UP','PULL_DOWN','PERIODIC','ONE_SHOT','append','format','split','strip','upper','lower','keys','items','values','log','sqrt','pi'];
+const SIGS={motorOn:"motorOn(motor, direction, speed), e.g. `board.motorOn(1, 'f', 80)`",motorOff:'motorOff(motor), e.g. `board.motorOff(1)`',STServo:'STServo(angle), e.g. `servo.STServo(90)`',
+  CONServo:'CONServo("power", value) or CONServo("duty", value), e.g. `servo.CONServo("power", 50)`',Servo:'WNE103.Servo(pin), e.g. `WNE103.Servo(15)`',duty_u16:'duty_u16(value from 0 to 65535)',
+  duty_ns:'duty_ns(nanoseconds)',freq:'freq(hertz)',sleep:'`time.sleep(seconds)`',sleep_ms:'`time.sleep_ms(milliseconds)`',Pin:'`Pin(15, Pin.OUT)` or `Pin(14, Pin.IN, Pin.PULL_UP)`',
+  ADC:'`ADC(26)`, `ADC(27)` or `ADC(28)`',PWM:'`PWM(Pin(16))`',range:'`range(stop)` or `range(start, stop)`',KitronikPicoMotor:'`KitronikPicoMotor()`'};
+const COLON_EG={if:'if x > 5:',elif:'elif x > 2:',else:'else:',for:'for i in range(10):',while:'while True:',def:'def blink():',class:'class Robot:',try:'try:',except:'except:',finally:'finally:',with:'with open(name) as f:'};
+
+/* A quick look at the code before it runs, for the mistakes beginners make most. */
+function lintPy(src){ const out=[], lines=src.split('\n'), stack=[]; let triple=null;
+  for(let li=0;li<lines.length;li++){ const L=lines[li]; let i=0;
+    while(i<L.length){ const ch=L[i];
+      if(triple){ const e=L.indexOf(triple,i); if(e<0){ i=L.length; break; } i=e+3; triple=null; continue; }
+      if(ch==='#') break;
+      if(L.startsWith('"""',i)||L.startsWith("'''",i)){ triple=L.substr(i,3); i+=3; continue; }
+      if(ch==='"'||ch==="'"){ let j=i+1; while(j<L.length&&L[j]!==ch){ if(L[j]==='\\') j++; j++; }
+        if(j>=L.length){ out.push({line:li+1,title:'This line has a quote that is never closed.',hint:'Text needs a quote at both ends, e.g. `print("hello")`.'}); return out; }
+        i=j+1; continue; }
+      if('([{'.includes(ch)) stack.push({ch,line:li+1});
+      else if(')]}'.includes(ch)){ const open=stack.pop(), want={')':'(',']':'[','}':'{'}[ch];
+        if(!open||open.ch!==want){ out.push({line:li+1,title:`This line has an extra \`${ch}\`.`,hint:open?`It doesn't match the \`${open.ch}\` opened on line ${open.line}.`:'Remove it, or add the matching opening bracket.'}); return out; } }
+      i++; }
+    if(stack.length||triple) continue;
+    const code=L.replace(/#.*$/,'').trimEnd(), bare=code.replace(/(["'])(?:\\.|(?!\1).)*\1/g,'""');
+    const m=bare.match(/^\s*(if|elif|else|for|while|def|class|try|except|finally|with)\b/);
+    if(m&&!bare.endsWith(':')&&!bare.endsWith('\\')&&!/:\s*\S/.test(bare)) out.push({line:li+1,title:`Missing \`:\` at the end of this \`${m[1]}\` line.`,hint:`Lines that start with \`${m[1]}\` end with a colon, e.g. \`${COLON_EG[m[1]]}\``});
+    const cond=bare.match(/^\s*(?:if|elif|while)\b([^(]*?):?\s*$/);
+    if(cond&&/(^|[^=!<>])=($|[^=])/.test(cond[1])) out.push({line:li+1,title:'Use `==` to compare, not `=`.',hint:'A single `=` stores a value. To check if two things are equal, write `==`, e.g. `if x == 5:`'});
+    if(/^\s*print\s+["'\w]/.test(bare)) out.push({line:li+1,title:'`print` needs brackets.',hint:'Write `print("hello")` instead of `print "hello"`.'});
+  }
+  if(stack.length){ const o=stack[stack.length-1]; out.push({line:o.line,title:`The \`${o.ch}\` on this line is never closed.`,hint:`Add the matching \`${({'(':')','[':']','{':'}'})[o.ch]}\`.`}); }
+  const tabL=lines.findIndex(l=>/^\t/.test(l)), spL=lines.findIndex(l=>/^ +\S/.test(l));
+  if(tabL>=0&&spL>=0) out.push({line:tabL+1,lv:'warn',title:'This file mixes tabs and spaces for indenting.',hint:'Use 4 spaces everywhere. The Tab key in this editor already types spaces.'});
+  return out; }
+
+/* Turn a MicroPython traceback into one plain sentence and a hint. */
+function explainPy(msg){
+  const lines=String(msg).replace(/\s+$/,'').split('\n').filter(l=>!/File "<stdin>"/.test(l));
+  const frames=[]; for(const l of lines){ const m=l.match(/File "\/?(?:lib\/)?([^"]+)", line (\d+)/); if(m) frames.push({file:m[1],line:+m[2]}); }
+  const userF=frames.filter(f=>code.files[f.file]!==undefined); const loc=userF.length?userF[userF.length-1]:(frames[frames.length-1]||null);
+  const last=lines[lines.length-1]||''; const mm=last.match(/^(\w+): ?(.*)$/)||[null,last,'']; const type=mm[1], text=mm[2];
+  const srcLine=loc&&code.files[loc.file]!==undefined?((code.files[loc.file].split('\n')[loc.line-1])||''):'';
+  const allSrc=Object.values(code.files).join('\n'), idents=new Set(); allSrc.replace(/\b[A-Za-z_]\w*\b/g,w=>{ if(!PY_KW.has(w)) idents.add(w); return w; });
+  let title=`${type}: ${text}`, hint='', m;
+  if(type==='NameError'&&(m=text.match(/name '(\w+)'/))){ const n=m[1]; title=`\`${n}\` isn't defined.`;
+    if(['Pin','PWM','ADC','Timer'].includes(n)) hint=`Add \`from machine import ${n}\` at the top of the file.`;
+    else if(['time','math','machine','WNE103','random'].includes(n)) hint=`Add \`import ${n}\` at the top of the file.`;
+    else { const c=closest(n,[...idents,...PY_BI]); hint=c?`Did you mean \`${c}\`? Python is case-sensitive.`:'Create it before you use it (for example `count = 0`), or check the spelling.'; } }
+  else if(type==='AttributeError'&&(m=text.match(/'(\w+)' object has no attribute '(\w+)'/)||text.match(/()has no attribute '(\w+)'/))){ const obj=m[1]||'It', attr=m[2];
+    if(obj==='NoneType'){ title='Something on this line is `None` (empty).'; hint='A function may have returned nothing, or a variable was never set.'; }
+    else { title=`\`${obj==='module'?'This module':obj}\` has no \`${attr}\`.`; const c=closest(attr,API_ATTRS); hint=c?`Did you mean \`${c}\`?`:'Check the spelling, or what kind of object this is.'; } }
+  else if(type==='TypeError'){
+    if(/positional argument|required positional|takes \d+|but \d+ were given/.test(text)){ let fn=null; srcLine.replace(/(\w+)\s*\(/g,(w,f)=>{ if(!fn&&SIGS[f]) fn=f; return w; });
+      title=fn?`\`${fn}\` was given the wrong number of values.`:'A function on this line got the wrong number of values.'; hint=fn?`Use ${SIGS[fn]}.`:'Count the values inside the brackets and compare with what the function needs.'; }
+    else if((m=text.match(/unsupported types for (\S+): '(\w+)', '(\w+)'/))){ const op={__add__:'+',__sub__:'-',__mul__:'*',__truediv__:'/',__floordiv__:'//',__mod__:'%',__pow__:'**',__lt__:'<',__gt__:'>',__le__:'<=',__ge__:'>='}[m[1]]||m[1], tn=t=>({str:'text',int:'a whole number',float:'a decimal number',NoneType:'None',list:'a list',tuple:'a tuple'})[t]||t;
+      title=`Can't use \`${op}\` with ${tn(m[2])} and ${tn(m[3])}.`;
+      hint=(m[2]==='str'||m[3]==='str')?'Use `str(number)` to join a number to text, or `int(text)` to do maths with text.':'Check the types of the values on this line.'; }
+    else if(/can't convert|to str implicitly/.test(text)){ title="Can't mix text and numbers here."; hint='Use `str(x)` to turn a number into text.'; }
+    else if(/isn't callable|not callable/.test(text)){ title="Something here is used like a function but isn't one."; hint='Look for a missing `*` (e.g. `2(x)`) or a variable that reused a function name.'; }
+    else if(/isn't iterable|not iterable/.test(text)){ title="This can't be looped over."; hint='A `for` loop needs a list or `range()`, e.g. `for i in range(5):`'; }
+    else if(/isn't subscriptable|not subscriptable/.test(text)){ title='`[ ]` was used on something that isn\'t a list or text.'; hint='Check the variable before the `[`.'; } }
+  else if(type==='IndentationError'){
+    if(/unexpected indent/.test(text)){ title='This line is indented more than it should be.'; hint='Line it up with the code above it.'; }
+    else if(/expected an indented block/.test(text)){ title='The line after a `:` must be indented.'; hint='Indent it by 4 spaces (press Tab).'; }
+    else if(/unindent/.test(text)){ title="This line's indentation doesn't line up with the lines above."; hint='Use the same number of spaces as the block it belongs to.'; }
+    else { title='The indentation on this line is wrong.'; hint='Python uses 4 spaces to show which lines belong to an `if`, `for`, `while` or `def`.'; } }
+  else if(type==='SyntaxError'){ title="Python can't read this line."; hint='Check this line and the one above it for a missing `:`, bracket or quote.'; }
+  else if(type==='ImportError'&&(m=text.match(/no module named '([\w.]+)'/i))){ const n=m[1]; title=`There's no library called \`${n}\`.`;
+    const c=closest(n,['WNE103','machine','time','math','utime','random',...Object.keys(code.files).map(f=>f.replace(/\.py$/,''))]);
+    hint=c?`Did you mean \`${c}\`? Library names are case-sensitive.`:'Add it with "+ File" or "Upload .py", or check the spelling.'; }
+  else if(type==='ImportError'&&(m=text.match(/can't import name '?(\w+)'?/))){ title=`\`${m[1]}\` isn't in that library.`; const c=closest(m[1],[...API_ATTRS,'KitronikPicoMotor','Servo']); hint=c?`Did you mean \`${c}\`?`:'Check the spelling.'; }
+  else if(type==='ZeroDivisionError'){ title='This line divides by zero.'; hint='Check the number you divide by. A sensor reading of 0 is a common cause.'; }
+  else if(type==='ValueError'&&/invalid syntax for (integer|number)/.test(text)){ title="That text isn't a number."; hint='`int()` and `float()` only work on text made of digits.'; }
+  else if(type==='ValueError'&&/math domain/.test(text)){ title='Maths error on this line.'; hint='For example `math.log(0)` or the square root of a negative number.'; }
+  else if(type==='ValueError'){ title=cap1(text)+(/[.!?]$/.test(text)?'':'.'); }
+  else if(type==='IndexError'){ title='That position is past the end of the list.'; hint='Lists start at 0, so the last item of a 3-item list is `[2]`.'; }
+  else if(type==='KeyError'){ title=`There's no key ${text} in this dictionary.`; }
+  else if(type==='MemoryError'){ title='The program ran out of memory.'; hint='A list may be growing without end.'; }
+  else if(type==='RuntimeError'&&/recursion/.test(text)){ title='A function keeps calling itself without stopping.'; }
+  else if(type==='OSError'&&/not simulated/.test(text)){ title=text; }
+  else if(type==='Exception'&&/INVALID DIRECTION/.test(text)){ title="`motorOn` direction must be `'f'` or `'r'`."; hint="e.g. `board.motorOn(1, 'f', 80)`"; }
+  else if(type==='Exception'&&/INVALID MOTOR/.test(text)){ title='The motor number must be 1 or 2.'; hint="e.g. `board.motorOn(2, 'r', 60)`"; }
+  return {title,hint,loc,raw:lines,why:WHY_PY[type]||''}; }
+
+/* Console cards: one bold line, a clickable location, a hint, the raw error tucked away. */
+function conCard(info, kind){ const d=document.createElement('div'); d.className='ccard'+(kind?' '+kind:'');
+  d.innerHTML=`<div class="cc-t">${fmtMsg(info.title)}</div>${info.loc?`<button class="cc-loc" data-file="${esc(info.loc.file)}" data-line="${info.loc.line}">${esc(info.loc.file)} · line ${info.loc.line}</button>`:''}${info.hint?`<div class="cc-h">${fmtMsg(info.hint)}</div>`:''}${info.why?`<div><button class="why-b">Why?</button><div class="why-t" hidden>${fmtMsg(info.why)}</div></div>`:''}${info.raw&&info.raw.length?`<details><summary>Show full error</summary><pre>${esc(info.raw.join('\n'))}</pre></details>`:''}`;
+  con.appendChild(d); con.scrollTop=con.scrollHeight; }
+con.addEventListener('click',e=>{ const b=e.target.closest('.cc-loc'); if(b) markLine(b.dataset.file,+b.dataset.line,''); });
+
+/* Editor: highlight the faulty line and say what's wrong beside it. */
+let errMsg='';
+const edMarkEl=document.createElement('div'); edMarkEl.className='ed-mark'; edMarkEl.hidden=true;
+const edMsgEl=document.createElement('div'); edMsgEl.className='ed-msg'; edMsgEl.hidden=true;
+document.querySelector('.ed-c').prepend(edMarkEl); document.querySelector('.ed-c').append(edMsgEl);
+let _cw=0; function charW(){ if(!_cw){ const cx=document.createElement('canvas').getContext('2d'); cx.font=getComputedStyle(edH).font; _cw=cx.measureText('MMMMMMMMMM').width/10||7.5; } return _cw; }
+const lineH=()=>parseFloat(getComputedStyle(edH).lineHeight)||19.4;
+function edMarkRender(){ renderTraceMarks(); if(!errLine){ edMarkEl.hidden=true; edMsgEl.hidden=true; return; } const lh=lineH(), top=8+(errLine-1)*lh;
+  edMarkEl.hidden=false; edMarkEl.style.top=top+'px'; edMarkEl.style.height=lh+'px';
+  if(errMsg){ const len=(edT.value.split('\n')[errLine-1]||'').length; edMsgEl.hidden=false; edMsgEl.textContent='← '+errMsg.replace(/`/g,''); edMsgEl.style.top=top+'px'; edMsgEl.style.left=(12+len*charW()+16)+'px'; }
+  else edMsgEl.hidden=true; }
+function markLine(file,line,msg){ if(paneTab!=='code') setPane('code');
+  const target = code.files[file]!==undefined ? file : (LIBS[file]!==undefined ? '@'+file : null); if(!target) return;
+  if(code.active!==target) openFile(target); errLine=line; errMsg=msg||''; edRender();
+  const ed=$('#ed'); ed.scrollTop=Math.max(0,8+(line-1)*lineH()-ed.clientHeight/3); }
+
+/* What the code uses: Pin(15, Pin.OUT), PWM(Pin(16)), ADC(26), WNE103.Servo(15), KitronikPicoMotor() */
+function codePins(src){ const out=[];
+  src.split('\n').forEach((L,i)=>{ const c=L.replace(/#.*$/,''), ln=i+1; let m;
+    const re=/\b(?:machine\.)?Pin\(\s*(\d+)\s*(?:,\s*(?:machine\.)?Pin\.(OUT|IN|OPEN_DRAIN))?(?:\s*,\s*(?:machine\.)?Pin\.(PULL_UP|PULL_DOWN))?/g;
+    while((m=re.exec(c))){ const before=c.slice(0,m.index); const ctx=/PWM\(\s*$/.test(before)?'pwm':/ADC\(\s*$/.test(before)?'adc':/Servo\(\s*$/.test(before)?'servo':null;
+      out.push({gp:+m[1],line:ln,kind:ctx||(m[2]==='OUT'||m[2]==='OPEN_DRAIN'?'out':m[2]==='IN'?(m[3]==='PULL_UP'?'pu':m[3]==='PULL_DOWN'?'pd':'in'):'pin')}); }
+    const ra=/\bADC\(\s*(\d+)\s*\)/g; while((m=ra.exec(c))){ const n=+m[1]; if(n===4) continue; out.push({gp:n<4?26+n:n,line:ln,kind:'adc'}); }
+    const rs=/\bServo\(\s*(\d+)\s*\)/g; while((m=rs.exec(c))) out.push({gp:+m[1],line:ln,kind:'servo'});
+    if(/\bKitronikPicoMotor\(\s*\)/.test(c)) out.push({gp:-1,line:ln,kind:'motor'}); });
+  return out; }
+
+function designators(){ const des={}, cnt={}; for(const p of parts){ const pre=DESIG[p.type]; if(!pre) continue; cnt[pre]=(cnt[pre]||0)+1; des[p.id]=pre+cnt[pre]; } return des; }
+function partLabel(p,des){ const nm=p.type==='led'?`${p.props.color} LED`:p.type==='resistor'?`${fmtOhm(p.props.ohms)} resistor`:{servo:'servo',crservo:'continuous servo',micro:'micro switch',slide:'slide switch',thermistor:'thermistor',ir:'IR sensor',motor:'motor',reg:'regulator',psu:'power supply',batt:'battery pack',pico:'Pico',driver:'Kitronik board'}[p.type]||DEF[p.type].short;
+  return des&&des[p.id]?`${nm} (${des[p.id]})`:nm; }
+/* Nets joined by jumper wires only, so a closed switch still counts as a part between two nets. */
+function wireNetFn(){ const up=new Map(), f=k=>{ while(up.has(k)&&up.get(k)!==k) k=up.get(k); return k; }, u=(a,b)=>{ a=f(a); b=f(b); if(a!==b) up.set(a,b); };
+  for(const w of parts) if(w.type==='wire'&&!w.props.broken) u(nodeOf(w,0),nodeOf(w,1));
+  for(const p of parts){ if(p.type==='pico'){ const g=PICO_GND.map(n=>nodeOf(p,n-1)); g.forEach(k=>u(k,g[0])); } if(p.type==='driver') u(`T${p.id}.7`,`T${p.id}.1`); }
+  return f; }
+function powerNets(N=wireNetFn()){ const gnd=new Set(), pwr=new Set();
+  for(const q of sim.picos||[]){ PICO_GND.forEach(n=>gnd.add(N(q.pin(n)))); [36,39,40].forEach(n=>pwr.add(N(q.pin(n)))); }
+  for(const p of parts){ if(p.type==='psu'||p.type==='batt'){ pwr.add(N(nodeOf(p,0))); gnd.add(N(nodeOf(p,1))); }
+    if(p.type==='driver'){ gnd.add(N(`T${p.id}.1`)); pwr.add(N(`T${p.id}.0`)); pwr.add(N(`T${p.id}.6`)); }
+    if(p.type==='reg'){ gnd.add(N(nodeOf(p,0))); pwr.add(N(nodeOf(p,1))); } }
+  return {gnd,pwr}; }
+/* What each Pico GPIO is wired to, looking one resistor further for LEDs. */
+function loadsOf(pc){ const N=wireNetFn(), {gnd,pwr}=powerNets(N), idx=new Map(), des=designators();
+  for(const p of parts){ if(p.type==='wire'||p.type==='meter'||p.id===pc.pid) continue; partAtts(p).forEach((_,i)=>{ const n=N(nodeOf(p,i)); if(!idx.has(n)) idx.set(n,[]); idx.get(n).push({p,i}); }); }
+  const res={};
+  for(const name of GPIO_LIST){ const net=N(pc.pin(PICO_NUM[name])), direct=idx.get(net)||[];
+    if(gnd.has(net)){ res[name]={kind:'tiedgnd',p:null,label:'GND'}; continue; }
+    if(pwr.has(net)){ res[name]={kind:'tiedpwr',p:null,label:'a power rail'}; continue; }
+    if(!direct.length) continue;
+    const f=fn=>direct.find(fn); let x, kind='other', main=direct[0].p, via=null;
+    if((x=f(e=>e.p.type==='servo'&&e.i===2))){ kind='servo'; main=x.p; }
+    else if((x=f(e=>e.p.type==='crservo'&&e.i===2))){ kind='crservo'; main=x.p; }
+    else if((x=f(e=>e.p.type==='ir'&&e.i===0))){ kind='ir'; main=x.p; }
+    else if((x=f(e=>e.p.type==='micro'))){ kind='switch'; main=x.p; }
+    else if((x=f(e=>e.p.type==='slide'&&e.i===1))){ kind='slide'; main=x.p; }
+    else if((x=f(e=>e.p.type==='thermistor'))){ kind='therm'; main=x.p; }
+    else if((x=f(e=>e.p.type==='led'))){ kind='led'; main=x.p; }
+    else if((x=f(e=>e.p.type==='resistor'))){ const r=x.p, other=N(nodeOf(r,1-x.i)), led=(idx.get(other)||[]).find(e=>e.p!==r&&e.p.type==='led');
+      if(led){ kind='led'; main=led.p; via=r; } else if(gnd.has(other)){ kind='pulldown'; main=r; } else if(pwr.has(other)){ kind='pullup'; main=r; } else { kind='resistor'; main=r; } }
+    res[name]={kind,p:main,via,label:partLabel(main,des)}; }
+  return res; }
+
+const OUT_KINDS=['led','servo','crservo','resistor','other'], IN_KINDS=['switch','slide','therm','ir','pullup','pulldown'];
+function codeCircuitIssues(){ const issues=[], p=committed(code.target); if(!p) return issues; const pc=(sim.picos||[]).find(x=>x.pid===p.id); if(!pc) return issues;
+  const uses=codePins(code.files['main.py']||''); if(!uses.length) return issues;
+  const loads=loadsOf(pc), usedGP=new Set(uses.filter(u=>u.gp>=0).map(u=>'GP'+u.gp)), motorPins=p.type==='driver'?[...drvMap(p).m1,...drvMap(p).m2]:[], seen=new Set();
+  for(const u of uses){ if(u.kind==='motor'||u.gp<0) continue; const name='GP'+u.gp; if(!PICO_NUM[name]||seen.has(name+u.kind)) continue; seen.add(name+u.kind);
+    if(motorPins.includes(name)) continue;
+    const L=loads[name], isOut=['out','pwm','servo'].includes(u.kind), isIn=['in','pu','pd','adc'].includes(u.kind);
+    if(!L){ if(p.type==='driver'&&!['GP0','GP1','GP26','GP27'].includes(name)){ issues.push({lv:'warn',title:`Your code uses ${name} (line ${u.line}), but that pin has no screw terminal on the Kitronik board.`,hint:'Only GP0, GP1, GP26 and GP27 are brought out.',line:u.line}); continue; }
+      const cands=Object.entries(loads).filter(([n,l])=>!usedGP.has(n)&&l.p&&(isOut?OUT_KINDS.includes(l.kind):isIn?IN_KINDS.includes(l.kind):true));
+      const best=cands.find(([n,l])=>u.kind==='servo'?/servo/.test(l.kind):u.kind==='adc'?['therm','ir'].includes(l.kind):true)||cands[0];
+      issues.push({lv:'bad',title:`Your code ${isIn?'reads':'drives'} ${name} (line ${u.line}), but nothing is wired to ${name}.`,
+        hint:best?`Your ${best[1].label} is on ${best[0]}. Change \`${u.gp}\` to \`${best[0].slice(2)}\` on line ${u.line}, or move the wire to ${name} (Pico pin ${PICO_NUM[name]}).`:`Wire something to ${name} (Pico pin ${PICO_NUM[name]}), or check the pin number.`,
+        line:u.line,pids:best?[best[1].p.id]:[],gp:[name,best?best[0]:null].filter(Boolean)}); continue; }
+    if(L.kind==='tiedgnd'||L.kind==='tiedpwr'){ if(isOut) issues.push({lv:'bad',title:`${name} is wired straight to ${L.label}, and your code drives it as an output.`,hint:'That is a short circuit. Put a part (such as a resistor and LED) between the pin and the rail.',line:u.line,gp:[name]}); continue; }
+    if(u.kind==='servo'&&!/servo/.test(L.kind)) issues.push({lv:'warn',title:`\`Servo(${u.gp})\` is in your code, but ${name} is wired to a ${L.label}.`,hint:"Check which pin the servo's orange signal wire is on.",line:u.line,pids:[L.p.id],gp:[name]});
+    if(u.kind==='in'&&L.kind==='switch') issues.push({lv:'bad',title:`${name} reads the micro switch but has no pull-up, so it will read random values.`,hint:`Use \`Pin(${u.gp}, Pin.IN, Pin.PULL_UP)\`. Then pressed = 0 and released = 1.`,line:u.line,pids:[L.p.id],gp:[name]});
+    if(isOut&&['switch','slide','therm','ir'].includes(L.kind)) issues.push({lv:'warn',title:`${name} is an output in your code, but it is wired to a ${L.label}.`,hint:`To read it, use \`${['therm','ir'].includes(L.kind)?`ADC(${u.gp})`:`Pin(${u.gp}, Pin.IN, Pin.PULL_UP)`}\`.`,line:u.line,pids:[L.p.id],gp:[name]});
+    if(u.kind==='adc'&&L.kind==='led') issues.push({lv:'warn',title:`\`ADC(${u.gp})\` reads ${name}, but that pin is wired to an LED.`,hint:'ADC is for sensors such as the thermistor or IR sensor.',line:u.line,pids:[L.p.id],gp:[name]}); }
+  for(const [n,L] of Object.entries(loads)){ if(usedGP.has(n)||motorPins.includes(n)||!L.p) continue;
+    if(['led','servo','crservo','switch','slide','therm','ir'].includes(L.kind)) issues.push({lv:'tip',title:`Your ${L.label} is on ${n}, but your code never uses ${n}.`,pids:[L.p.id],gp:[n]}); }
+  const mot=uses.find(u=>u.kind==='motor');
+  if(mot){ if(p.type!=='driver') issues.push({lv:'warn',title:'`KitronikPicoMotor()` drives the Kitronik board, but "Runs on" is set to the Pico on the breadboard.',hint:'In the code panel, set "Runs on" to the Pico in the Kitronik driver.',line:mot.line});
+    else if(p.props.pins==='kitronik') issues.push({lv:'warn',title:'`KitronikPicoMotor()` uses GP12/13 and GP9/8, but this board is set to Kitronik standard wiring.',hint:'Select the board and choose "WNE robot" wiring.',line:mot.line,pids:[p.id]}); }
+  return issues; }
+
+function circuitIssues(){ const WN=wireNetFn(), out=[], des=designators(), {gnd,pwr}=powerNets(WN);
+  for(const w of sim.warns) out.push({lv:w.lv,title:w.msg,pids:[w.pid]});
+  const real=parts.filter(p=>!['wire','meter'].includes(p.type));
+  const anyPower=parts.some(p=>p.type==='psu'||p.type==='batt'||(['pico','driver'].includes(p.type)&&(sim.parts[p.id]||{}).on));
+  const active=real.some(p=>['pico','driver','servo','crservo','motor','ir','reg','led'].includes(p.type));
+  if(active&&!anyPower) out.push({lv:'bad',title:'Nothing on the bench has power.',hint:'Select the Pico and tick "USB cable plugged in", or add a power supply or battery pack.'});
+  for(const p of parts.filter(p=>p.type==='pico')) if(anyPower&&!(sim.parts[p.id]||{}).on) out.push({lv:'bad',title:'The Pico has no power.',hint:'Select it and tick "USB cable plugged in", or feed 1.8–5.5 V into VSYS.',pids:[p.id]});
+  for(const d of parts.filter(p=>p.type==='driver')){ if(!d.props.on) out.push({lv:'warn',title:'The Kitronik board is switched off.',hint:'Click its ON/OFF switch.',pids:[d.id]});
+    else if(!(sim.parts[d.id]||{}).on) out.push({lv:'bad',title:'The Kitronik board has no power.',hint:'Connect a supply or battery pack to its POWER screw terminals (+ and −).',pids:[d.id]}); }
+  for(const p of parts){ const d=DEF[p.type]; if(d.kind!=='module'||!p.ends||p.type==='meter') continue;
+    p.ends.forEach((a,i)=>{ if(a.k!=='f') return; const optional=p.type==='micro'&&i>0; out.push({lv:optional?'tip':'warn',title:`${cap1(partLabel(p,des))}: the ${d.pinNames[i]} lead isn't plugged in${optional?' (fine if you do not need it)':''}.`,pids:[p.id]}); }); }
+  for(const L of parts.filter(p=>p.type==='led'&&!p.props.burnt)){ const a=sim.v(nodeOf(L,0)), k=sim.v(nodeOf(L,1)), S=sim.parts[L.id]||{};
+    if(a!=null&&k!=null&&k-a>0.8) out.push({lv:'bad',title:`The ${partLabel(L,des)} is in backwards.`,hint:'Swap its legs: the long leg (anode, end 1) goes toward the GPIO pin or +, the flat side toward GND.',pids:[L.id]});
+    else if((S.b||0)<0.02&&a!=null&&k!=null&&a>1.0&&Math.abs(a-k)<0.3&&nodeOf(L,0)!==nodeOf(L,1)) out.push({lv:'bad',title:`The ${partLabel(L,des)} has no path back to GND.`,hint:"Connect its flat side (cathode) to GND, either straight or through a resistor.",pids:[L.id]}); }
+  const railName={0:'top +',1:'top −',16:'bottom +',17:'bottom −'}, other={0:16,16:0,1:17,17:1};
+  const fed=r=>{ const n=WN('R'+r); return gnd.has(n)||pwr.has(n); };
+  for(const r of [0,1,16,17]){ const key='R'+r; const users=parts.filter(p=>!['meter','wire'].includes(p.type)&&partAtts(p).some((a,i)=>nodeOf(p,i)===key));
+    if(!users.length||fed(r)) continue; if(fed(other[r])) out.push({lv:'bad',title:`The ${railName[r]} rail has no power, but parts are plugged into it.`,hint:`Add a jumper wire from the ${railName[other[r]]} rail to the ${railName[r]} rail.`,pids:users.map(p=>p.id)}); }
+  for(const p of parts.filter(p=>p.type==='psu'||p.type==='batt')){ const [a,b]=p.ends; if(a&&a.k==='h'&&(a.r===1||a.r===17)&&b&&b.k==='h'&&(b.r===0||b.r===16)) out.push({lv:'warn',title:`The ${partLabel(p,des)} leads are swapped.`,hint:'Red goes on a + rail (red line), black on a − rail (blue line).',pids:[p.id]}); }
+  for(const sv of parts.filter(p=>p.type==='servo'||p.type==='crservo')){ const st=(sim.parts[sv.id]||{}).state||''; if(st&&!/^Holding|clockwise|Stopped/i.test(st)) out.push({lv:/PWM/.test(st)?'tip':'warn',title:`${cap1(partLabel(sv,des))}: ${st}.`,pids:[sv.id]}); }
+  return out; }
+
+/* Check tab */
+let chkItems=[];
+function renderCheck(){ if(paneTab!=='check') return;
+  const lint=lintPy(code.files['main.py']||'').map(l=>({lv:l.lv||'bad',title:`main.py, line ${l.line}: ${l.title}`,hint:l.hint,line:l.line,grp:'Code'}));
+  const rank={bad:0,warn:1,tip:2}, seen=new Set();
+  chkItems=[...circuitIssues().map(x=>({...x,grp:'Circuit'})),...codeCircuitIssues().map(x=>({...x,grp:'Code and wiring'})),...lint].filter(x=>!seen.has(x.title)&&seen.add(x.title));
+  chkItems.sort((a,b)=>rank[a.lv]-rank[b.lv]);
+  const box=$('#chkList');
+  if(!chkItems.length){ box.innerHTML=healthHTML()+'<div class="chk-ok">No problems found. Power, wiring and the pins in your code all line up.</div>'; return; }
+  let h=''; for(const g of ['Circuit','Code and wiring','Code']){ const its=chkItems.map((x,i)=>[x,i]).filter(([x])=>x.grp===g); if(!its.length) continue;
+    h+=`<div class="chk-grp">${g}</div>`+its.map(([x,i])=>{ const why=x.grp==='Code'?whyLint(x.title):whyFor(x.title+' '+(x.hint||''));
+      return `<div role="button" tabindex="0" class="chk-item lv-${x.lv}" data-i="${i}"><span class="dot"></span><span>${fmtMsg(x.title)}${x.hint?`<small>${fmtMsg(x.hint)}</small>`:''}<span class="chk-acts">${why?'<button class="why-b">Why?</button>':''}${(x.pids&&x.pids.length)||x.gp||x.line?`<button class="show-b" data-i="${i}">Show me</button>`:''}</span>${why?`<span class="why-t" hidden>${fmtMsg(why)}</span>`:''}</span>${x.line?`<span class="chk-go">line ${x.line} →</span>`:''}</div>`; }).join(''); }
+  box.innerHTML=healthHTML()+h; }
+function healthHTML(){ healthRows=circuitHealth(); if(!healthRows.length) return '';
+  const icon={ok:'✓',warn:'⚠',bad:'✕',off:'○'};
+  return `<div class="chk-grp">Circuit health</div><div class="health">${healthRows.map((r,i)=>`<div role="button" tabindex="0" class="hrow ${r.ok}" data-h="${i}"><span class="hi">${icon[r.ok]}</span><span>${linkRefs(esc(r.label))}</span></div>`).join('')}</div>`; }
+$('#chkList').addEventListener('click',e=>{ const hr=e.target.closest('.hrow'); if(hr){ const r=healthRows[+hr.dataset.h]; if(r) showMe(r); return; } const b=e.target.closest('.chk-item'); if(!b) return; const x=chkItems[+b.dataset.i]; if(!x) return;
+  flashFor(x); if(x.line) markLine('main.py',x.line,x.title.replace(/^main\.py, line \d+: /,'')); });
+$('#bReCheck').onclick=()=>{ simulate(); renderParts(); renderCheck(); };
+
+/* Flash parts and Pico pins on the board */
+var flashSet=null;
+function gpPoint(name){ const p=committed(code.target); if(!p) return null; const n=PICO_NUM[name]; if(!n) return null;
+  if(p.type==='pico'){ const h=fixedPins(p)[n-1]; return [h.c*P,h.r*P]; }
+  const ti={GP0:8,GP1:9,GP27:10,GP26:11}[name]; if(ti==null) return null; const t=DEF.driver.terms[ti]; return [p.x+t[0],p.y+t[1]]; }
+function flashFor(x){ const pts=(x.gp||[]).map(gpPoint).filter(Boolean); if(!(x.pids&&x.pids.length)&&!pts.length) return;
+  flashSet={pids:x.pids||[],pts,until:performance.now()+2600}; drawOverlay(); if(x.pids&&x.pids[0]&&committed(x.pids[0])) select(x.pids[0]);
+  setTimeout(()=>{ if(flashSet&&performance.now()>=flashSet.until){ flashSet=null; drawOverlay(); } },2700); }
+
+/* Code from my circuit */
+function scaffoldFromCircuit(){ const p=committed(code.target)||targets()[0]; if(!p) return {err:'Add a Pico 2 WH or the Kitronik driver first.'};
+  const pc=(sim.picos||[]).find(x=>x.pid===p.id); if(!pc) return {err:'Add a Pico 2 WH or the Kitronik driver first.'};
+  const loads=loadsOf(pc), names=new Set(), mach=new Set(), setup=[], loop=[]; let wne=false, kit=false, helpers=false;
+  const uniq=b=>{ let n=b.replace(/[^a-z0-9_]/gi,'_').toLowerCase(), i=2; const base=n; while(names.has(n)) n=base+'_'+(i++); names.add(n); return n; };
+  const row=(stmt,cmt)=>setup.push(stmt.padEnd(42)+'# '+cmt);
+  if(p.type==='driver'){ kit=true; const k=p.props.pins==='kitronik';
+    if(k){ mach.add('Pin'); row('board = KitronikPicoMotor(Pin(3), Pin(2), Pin(6), Pin(7))','Kitronik standard wiring'); } else row('board = KitronikPicoMotor()','motor 1: GP12/GP13, motor 2: GP9/GP8');
+    helpers=true; loop.push('# forward(60)','# time.sleep(1)','# stop()'); }
+  const motorPins=p.type==='driver'?[...drvMap(p).m1,...drvMap(p).m2]:[];
+  for(const [n,L] of Object.entries(loads)){ if(motorPins.includes(n)||!L.p) continue; const gp=n.slice(2);
+    if(L.kind==='led'){ mach.add('Pin'); const v=uniq((L.p.props.color||'')+'_led'); row(`${v} = Pin(${gp}, Pin.OUT)`,`${L.label} on ${n}`); loop.push(`# ${v}.toggle()`); }
+    else if(L.kind==='servo'||L.kind==='crservo'){ wne=true; const v=uniq(L.kind==='servo'?'servo':'cservo'); row(`${v} = WNE103.Servo(${gp})`,`${L.label}, signal on ${n}`); loop.push(L.kind==='servo'?`# ${v}.STServo(90)            # angle 0-180`:`# ${v}.CONServo("power", 50)    # -100 to 100, 0 = stop`); }
+    else if(L.kind==='switch'){ mach.add('Pin'); const v=uniq('switch'); row(`${v} = Pin(${gp}, Pin.IN, Pin.PULL_UP)`,`${L.label} on ${n} (pressed = 0)`); loop.push(`# if ${v}.value() == 0:`,'#     print("pressed")'); }
+    else if(L.kind==='slide'){ mach.add('Pin'); const v=uniq('slide'); row(`${v} = Pin(${gp}, Pin.IN)`,`${L.label} on ${n} (reads 1 or 0)`); loop.push(`# position = ${v}.value()`); }
+    else if(L.kind==='therm'||L.kind==='ir'){ mach.add('ADC'); const v=uniq(L.kind==='therm'?'thermistor':'ir_sensor'); row(`${v} = ADC(${gp})`,`${L.label} on ${n}`); loop.push(`# reading = ${v}.read_u16()      # 0 to 65535`); }
+    else if(L.kind==='pullup'||L.kind==='pulldown'){ mach.add('Pin'); const v=uniq('input_'+gp); row(`${v} = Pin(${gp}, Pin.IN)`,`input with a ${L.kind==='pullup'?'pull-up':'pull-down'} resistor`); }
+    else { mach.add('Pin'); const v=uniq('pin_'+gp); row(`${v} = Pin(${gp}, Pin.OUT)`,`wired to ${L.label}`); } }
+  if(!setup.length) return {err:"Nothing is wired to the Pico's pins yet. Wire a part to a GPIO pin first."};
+  const L=[]; if(mach.size) L.push(`from machine import ${[...mach].sort().join(', ')}`); if(wne) L.push('import WNE103'); if(kit) L.push('from WNE103 import KitronikPicoMotor'); L.push('import time','');
+  L.push('# --- Parts found on your circuit ---',...setup,'');
+  if(helpers) L.push('# Motor helpers, as in main_vs2.py',"def forward(s):  board.motorOn(1,'f',s); board.motorOn(2,'f',s)","def backward(s): board.motorOn(1,'r',s); board.motorOn(2,'r',s)","def pivot_r(s):  board.motorOn(1,'f',s); board.motorOn(2,'r',s)","def pivot_l(s):  board.motorOn(1,'r',s); board.motorOn(2,'f',s)",'def stop():      board.motorOff(1);      board.motorOff(2)','');
+  L.push('# --- Your program ---','while True:','    # TODO: write your logic here. Some ideas:',...loop.map(l=>'    '+l),'    time.sleep(0.1)','');
+  return {text:L.join('\n'), count:setup.length}; }
+$('#bScaffold').onclick=()=>{ const r=scaffoldFromCircuit(); const box=$('#codeConfirm');
+  if(r.err){ conSys(r.err,'e'); return; }
+  box.hidden=false; box.innerHTML=`<span>Write setup code for the ${r.count} part${r.count===1?'':'s'} wired to the Pico? This replaces main.py.</span><button class="btn primary" id="scYes">Replace main.py</button><button class="btn" id="scNo">Cancel</button>`;
+  $('#scNo').onclick=()=>{ box.hidden=true; };
+  $('#scYes').onclick=()=>{ box.hidden=true; if(mpRun) stopCode('stop'); code.files['main.py']=r.text; openFile('main.py'); conSys('main.py now sets up every part wired to the Pico. Fill in the logic under "Your program", then press Run.'); }; };
+
+/* ================= trace, show me, health, why, live status ================= */
+const WHY=[
+  [/no resistor|LED goes straight|burned out/i,'A resistor limits how much current flows. An LED on its own lets far too much current through, which overheats it and can destroy it or the pin driving it. 220–330 Ω keeps the current around 5–15 mA.'],
+  [/12 mA|is carrying|damages the pin/i,'Each Pico pin can safely supply only about 12 mA. More than that strains the chip. A bigger resistor lets less current through.'],
+  [/3\.3 V at most|3\.3 V only|Pico pins take/i,'The Pico runs at 3.3 V. Putting 5 V or more on a GPIO pin pushes current into the chip and can permanently damage it.'],
+  [/VSYS/,"VSYS feeds the Pico's own power circuit, which accepts 1.8–5.5 V. Higher voltages can damage it. With USB plugged in, VSYS doesn't need a wire at all."],
+  [/short circuit|shorted|current limit/i,'A short circuit is a path from + to − with almost no resistance. A huge current flows, batteries heat up and supplies cut out. Every path from + to − should go through a part.'],
+  [/backwards/i,'An LED is a diode: current flows only one way, from the long leg (anode) to the flat side (cathode). Turned around, it blocks the current and stays dark.'],
+  [/path back to GND/i,'Current needs a complete loop: out of the pin, through the parts, and back to GND. A part connected on only one side is like a road that ends in a wall.'],
+  [/rail has no power/i,'The rails on each side of the breadboard are separate. Powering the bottom rails does not power the top ones unless a jumper wire joins them.'],
+  [/common ground/i,"A signal is a voltage measured against ground. If the servo and the Pico don't share a ground wire, the servo can't tell what voltage the Pico's signal is."],
+  [/pull-up|floating/i,'An input pin connected to nothing "floats" and picks up electrical noise, so it reads random 0s and 1s. A pull-up holds it at 1 until the switch connects it to GND (0).'],
+  [/nothing is wired to|never uses|wired to a/i,'The pin number in your code must match the pin the part is wired to. Pin(16) only talks to GP16, even if the LED sits right next to it on GP15.'],
+  [/same connected strip|same 5-hole strip/i,'Each column of 5 holes is joined by a metal strip underneath. If both legs share a column, the current takes the shortcut through the strip and skips the part.'],
+  [/isn't plugged in|not plugged into|lead is loose|end is loose/i,"A lead that isn't in a hole isn't connected to anything, so no current can flow through it."],
+  [/has no power|Nothing on the bench/i,'Every circuit needs a source of energy. The Pico gets it from USB; servos and motors need a supply or battery pack.'],
+  [/dissipating|overheats|heatsink|heat/i,'Power is voltage times current. A part turns that power into heat, and small parts can only get rid of a little heat before they overheat.'],
+  [/switched off/i,'The board has its own power switch. While it is off, nothing on the board gets power, including the docked Pico.'],
+  [/swapped/i,'By convention red is + and black is −. Swapped leads reverse the voltage, which some parts (LEDs, the Pico, servos) cannot handle.'],
+];
+const WHY_PY={NameError:'Python only knows names you have created (with =), imported, or defined with def. Spelling and capital letters must match exactly.',
+  AttributeError:'After a dot, Python looks for something that belongs to that object. Each kind of object has its own list: a Pin has on(), off(), toggle() and value().',
+  TypeError:'Every function expects certain inputs. Too many, too few, or the wrong kind (text instead of a number) makes Python stop.',
+  SyntaxError:"Python reads code like a sentence with strict grammar. A missing colon, bracket or quote means it can't understand the line.",
+  IndentationError:'Python uses the spaces at the start of a line to group lines under if, for, while and def. Lines in the same group must line up exactly.',
+  ImportError:"import loads a library by its exact name. Python can't find it if the name is misspelled or the file hasn't been added.",
+  ZeroDivisionError:'Dividing by zero has no answer, so Python stops instead of guessing.',
+  ValueError:'The value has the right type but is not one this function accepts, for example a pin number the Pico does not have.',
+  Exception:"The library checks its inputs and stops with a message when a value isn't one it understands.",
+  IndexError:'Lists are numbered from 0. Asking for a position past the end means there is nothing there to give back.'};
+const whyFor=t=>{ for(const [re,txt] of WHY) if(re.test(t)) return txt; return ''; };
+const whyLint=t=>/==/.test(t)?'In Python, = stores a value and == compares two values.':WHY_PY.SyntaxError;
+
+/* Turn GP16, D1, R1, SV1 ... into links that trace the connection. */
+function linkRefs(html){ const des=designators(), ids=new Set(Object.values(des));
+  return html.replace(/\b(GP(?:1\d|2[0-8]|\d))\b|\b((?:R|D|TH|M|BT|U|SV|IR|SW)\d{1,2})\b/g,(m,gp,d)=> (gp&&PICO_NUM[gp])||(d&&ids.has(d)) ? `<button class="ref" data-ref="${m}" title="Show ${m}">${m}</button>` : m); }
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-ref]'); if(!b) return; e.preventDefault(); e.stopPropagation(); traceRef(b.dataset.ref); },true);
+document.addEventListener('click',e=>{ const w=e.target.closest('.why-b'); if(!w) return; e.preventDefault(); e.stopPropagation(); const host=w.closest('.chk-item, .ccard'); const t=host&&host.querySelector('.why-t'); if(t){ t.hidden=!t.hidden; w.textContent=t.hidden?'Why?':'Hide'; } },true);
+document.addEventListener('click',e=>{ const s=e.target.closest('.show-b'); if(!s) return; e.preventDefault(); e.stopPropagation(); const x=chkItems[+s.dataset.i]||healthRows[+s.dataset.h]; if(x) showMe(x); },true);
+
+/* Trace a GPIO pin outward through the parts, or back from a part to its pin. */
+var traceState=null;
+function tracePico(){ const p=committed(code.target)||parts.find(q=>q.type==='pico')||parts.find(q=>q.type==='driver'); return p?{p,pc:(sim.picos||[]).find(x=>x.pid===p.id)}:null; }
+function walkFrom(startNet,pc,WN,pn){ const visited=new Set([startNet]), pids=new Set(), levels=[]; let frontier=[startNet], end=null;
+  const att=new Map(); for(const p of parts){ if(p.type==='wire'||p.type==='meter'||p.id===pc.pid) continue; partAtts(p).forEach((_,i)=>{ const n=WN(nodeOf(p,i)); if(!att.has(n)) att.set(n,[]); att.get(n).push({p,i}); }); }
+  for(let depth=0;depth<6&&frontier.length;depth++){ const next=[], lvl=[];
+    for(const net of frontier){ if(pn.gnd.has(net)){ end='GND'; continue; } if(pn.pwr.has(net)&&net!==startNet){ end=end||'power'; continue; }
+      for(const {p,i} of att.get(net)||[]){ if(pids.has(p.id)) continue; pids.add(p.id); lvl.push(p);
+        if(['resistor','led','thermistor','motor'].includes(p.type)){ const o=WN(nodeOf(p,1-i)); if(!visited.has(o)){ visited.add(o); next.push(o); } } } }
+    if(lvl.length) levels.push(lvl); frontier=next; }
+  for(const w of parts) if(w.type==='wire'&&w.ends.some((_,i)=>visited.has(WN(nodeOf(w,i))))) pids.add(w.id);
+  return {pids,levels,end,visited}; }
+function traceGP(name){ const t=tracePico(); if(!t||!t.pc||!PICO_NUM[name]) return; const WN=wireNetFn(), pn=powerNets(WN), des=designators();
+  const r=walkFrom(WN(t.pc.pin(PICO_NUM[name])),t.pc,WN,pn);
+  const lines=codePins(code.files['main.py']||'').filter(u=>'GP'+u.gp===name).map(u=>u.line);
+  const src=(code.files['main.py']||'').split('\n');
+  const steps=[]; for(const ln of [...new Set(lines)]) steps.push({kind:'code',line:ln,label:`${src[ln-1].trim().slice(0,38)} · line ${ln}`});
+  if(!lines.length) steps.push({kind:'note',label:'not used in main.py'});
+  steps.push({kind:'pin',gp:name,label:`${name} (Pico pin ${PICO_NUM[name]})`});
+  for(const lvl of r.levels) steps.push({kind:'parts',pids:lvl.map(p=>p.id),label:lvl.map(p=>partLabel(p,des)).join(' + ')});
+  if(!r.levels.length) steps.push({kind:'note',label:'nothing wired here'});
+  else steps.push({kind:'note',label:r.end==='GND'?'GND':r.end==='power'?'power rail':'no path back to GND'});
+  traceState={gp:name,pids:r.pids,lines,steps}; showTrace(); }
+function traceFromPart(pid){ const t=tracePico(); const des=designators(); const p=committed(pid); if(!p) return;
+  if(t&&t.pc){ const WN=wireNetFn(), pn=powerNets(WN);
+    for(const name of GPIO_LIST){ const r=walkFrom(WN(t.pc.pin(PICO_NUM[name])),t.pc,WN,pn); if(r.pids.has(pid)&&r.levels.length){ traceGP(name); return; } } }
+  const pids=new Set([pid]); const WN=wireNetFn(), nets=new Set(partAtts(p).map((_,i)=>WN(nodeOf(p,i))));
+  for(const w of parts) if(w.type==='wire'&&w.ends.some((_,i)=>nets.has(WN(nodeOf(w,i))))) pids.add(w.id);
+  traceState={gp:null,pids,lines:[],steps:[{kind:'parts',pids:[pid],label:partLabel(p,des)},{kind:'note',label:'not connected to a Pico GPIO pin'}]}; showTrace(); }
+function traceRef(ref){ if(/^GP/.test(ref)) return traceGP(ref); const des=designators(); const pid=+Object.keys(des).find(k=>des[k]===ref); if(pid) traceFromPart(pid); }
+function clearTrace(){ traceState=null; $('#tracebar').hidden=true; drawOverlay(); renderSchem(); edMarkRender(); }
+function showTrace(){ const bar=$('#tracebar'), st=traceState; bar.hidden=false;
+  bar.innerHTML=`<span class="tb-l">Trace</span>${st.steps.map((s,i)=>`${i?'<span class="tb-a">→</span>':''}<button class="tb-s ${s.kind}" data-ts="${i}">${esc(s.label)}</button>`).join('')}<span class="tb-sp"></span><button class="tb-go" data-tgo="sch">Schematic</button>${st.lines.length?'<button class="tb-go" data-tgo="code">Code</button>':''}<button class="iconbtn" data-tgo="x" aria-label="Clear trace">✕</button>`;
+  drawOverlay(); renderSchem(); edMarkRender(); }
+$('#tracebar').addEventListener('click',e=>{ const g=e.target.closest('[data-tgo]'); if(g){ const v=g.dataset.tgo; if(v==='x') clearTrace(); else if(v==='sch') setPane('sch'); else if(v==='code'){ setPane('code'); if(code.active!=='main.py') openFile('main.py'); edMarkRender(); const ed=$('#ed'); ed.scrollTop=Math.max(0,8+(traceState.lines[0]-1)*lineH()-ed.clientHeight/3); } return; }
+  const b=e.target.closest('[data-ts]'); if(!b||!traceState) return; const s=traceState.steps[+b.dataset.ts];
+  if(s.kind==='code') markLine('main.py',s.line,''); else if(s.kind==='parts'){ flashSet={pids:s.pids,pts:[],until:performance.now()+2600}; drawOverlay(); select(s.pids[0]); setTimeout(()=>{ if(flashSet&&performance.now()>=flashSet.until){ flashSet=null; drawOverlay(); } },2700); }
+  else if(s.kind==='pin'){ const pt=gpPoint(s.gp); if(pt){ flashSet={pids:[],pts:[pt],until:performance.now()+2600}; drawOverlay(); } } });
+function showMe(x){ if(x.gp&&x.gp[0]) traceGP(x.gp[0]); else if(x.pids&&x.pids.length===1&&committed(x.pids[0])&&!['pico','driver','psu','batt'].includes(committed(x.pids[0]).type)) traceFromPart(x.pids[0]); flashFor(x); if(x.line) markLine('main.py',x.line,x.title.replace(/^main\.py, line \d+: /,'')); }
+
+/* Circuit health: a short checklist on top of the Check tab. */
+var healthRows=[];
+function circuitHealth(){ const rows=[], des=designators(), cIss=circuitIssues(), issues=[...cIss,...codeCircuitIssues()], has=re=>issues.find(x=>re.test(x.title));
+  const add=(ok,label,x={})=>rows.push({ok,label,...x});
+  const picos=parts.filter(p=>p.type==='pico'||p.type==='driver');
+  for(const p of picos){ const on=(sim.parts[p.id]||{}).on; add(on?'ok':'bad',p.type==='pico'?(on?'Pico powered':'Pico has no power'):(on?'Kitronik board and Pico powered':'Kitronik board has no power'),{pids:[p.id]}); }
+  if(parts.some(p=>!['wire','meter'].includes(p.type))){ const g=has(/common ground|path back to GND/i); add(g?'warn':'ok',g?'Ground not connected everywhere':'Ground connected',g||{}); }
+  const sh=sim.warns.find(w=>/short circuit|shorted|carrying|current limit/i.test(w.msg)); add(sh?'bad':'ok',sh?'Too much current somewhere':'No short circuit or overload',sh?{pids:[sh.pid],title:sh.msg}:{});
+  const WN=wireNetFn();
+  for(const L of parts.filter(p=>p.type==='led')){ const S=sim.parts[L.id]||{}, nm=partLabel(L,des);
+    if(L.props.burnt){ add('bad',`${nm} burned out`,{pids:[L.id]}); continue; }
+    const issue=cIss.find(x=>x.pids&&x.pids.includes(L.id)&&x.lv!=='tip');
+    add(issue?'warn':(S.b||0)>0.05?'ok':'off',issue?`${nm}: ${issue.title.replace(/^The /,'')}`:(S.b||0)>0.05?`${nm} is lit`:`${nm} is off right now`,{pids:[L.id],title:issue?issue.title:''});
+    const nets=[WN(nodeOf(L,0)),WN(nodeOf(L,1))]; const r=parts.find(q=>q.type==='resistor'&&[0,1].some(i=>nets.includes(WN(nodeOf(q,i)))));
+    add(r?'ok':'warn',r?`${partLabel(r,des)} limits ${des[L.id]}'s current`:`${des[L.id]} has no current-limiting resistor`,{pids:r?[r.id,L.id]:[L.id],title:r?'':'no resistor'}); }
+  const t=tracePico();
+  if(t&&t.pc){ const S=sim.parts[t.p.id]||{}, g=gpioOf(t.p).gpio||{};
+    const loads=loadsOf(t.pc);
+    for(const name of GPIO_LIST){ const rd=(S.gpio||{})[name]||''; if(/^floating/.test(rd)&&(g[name]||codePins(code.files['main.py']||'').some(u=>'GP'+u.gp===name))&&loads[name]) add('warn',`${name} is floating`,{gp:[name],title:'floating'}); } }
+  for(const s of parts.filter(p=>p.type==='servo'||p.type==='crservo')){ const st=(sim.parts[s.id]||{}).state||''; const ok=/^Holding|clockwise|Stopped/i.test(st); add(ok?'ok':'warn',ok?`${partLabel(s,des)} has power and a signal`:`${partLabel(s,des)}: ${st}`,{pids:[s.id],title:st}); }
+  if(codePins(code.files['main.py']||'').length){ const bad=codeCircuitIssues().find(x=>x.lv==='bad'); add(bad?'bad':'ok',bad?'Code pins don\'t match the wiring':'Code pins match the wiring',bad||{}); }
+  return rows; }
+
+/* Live status for hover */
+function gpioStatus(p,name){ const g=gpioOf(p).gpio||{}, cfg=g[name]||{m:'in'}, rd=((sim.parts[p.id]||{}).gpio||{})[name]||'';
+  if(cfg.m==='pwm') return `PWM ${+cfg.f||0} Hz, duty ${(+cfg.d||0).toFixed(1)}%${+cfg.f>=40&&+cfg.f<=330?` (${((+cfg.d||0)/100*1000/(+cfg.f)).toFixed(2)} ms pulse)`:''}`;
+  const mode={out1:'output',out0:'output',pu:'input, pull-up',pd:'input, pull-down',in:'input'}[cfg.m]||'input';
+  return `${mode} · ${rd||'—'}`; }
+function partStatusHTML(p){ const des=designators(), S=sim.parts[p.id]||{}; const rows=(S.ro||[]).slice(0,3).map(([k,v])=>`${esc(k)}: ${esc(v)}`);
+  let state=''; if(p.type==='led') state=p.props.burnt?'BURNED OUT':(S.b||0)>0.05?'ON':'OFF'; else if(S.state) state=S.state; else if(S.badge) state=S.badge;
+  return `<b>${esc(partLabel(p,des))}</b>${state?` · ${esc(state)}`:''}${rows.length?'<br>'+rows.join('<br>'):''}`; }
+
+const traceMarks=[];
+function renderTraceMarks(){ traceMarks.splice(0).forEach(el=>el.remove()); if(!traceState||!traceState.lines.length||code.active!=='main.py') return;
+  const lh=lineH(), host=document.querySelector('.ed-c'); for(const ln of traceState.lines){ const d=document.createElement('div'); d.className='ed-trace'; d.style.top=(8+(ln-1)*lh)+'px'; d.style.height=lh+'px'; host.prepend(d); traceMarks.push(d); } }
 
 /* ================= boot ================= */
 function boot(){
