@@ -8,7 +8,9 @@ A browser-based breadboard simulator for practising first-year circuit wiring an
 
 ## What's in it
 
-- **Breadboard:** full-size, 63 columns with split rails. Drag parts from the bin; pins snap into holes. Drag between two holes to draw a wire.
+- **Breadboard:** full-size, 63 columns with split rails. Drag parts from the bin; pins snap into holes. Every part rotates (R key), including servos, motors and the Kitronik board.
+- **Wires:** drag from hole to hole, or route around the board. Let go on empty space (or click a hole once) to start bending, click to add bends, and click a hole to finish. Double-click a wire to add a bend, and drag bends to reroute.
+- **Themes:** System, Light, Dark (dark workspace with a white breadboard, recommended for teaching) and All dark (dark breadboard too).
 - **Parts:**
   - Raspberry Pi Pico 2 WH
   - Kitronik Motor Driver Board for Pico
@@ -59,10 +61,15 @@ Press **Code** in the toolbar to open the editor.
 
   The editor shows it as a read-only tab. Its Wi-Fi functions report that they are not simulated.
 - **Libraries:** add or upload your own `.py` files and `import` them.
+- **Editor and console:**
+  - *Autocomplete* knows `machine`, `time`, `WNE103` and your own objects (e.g. `led.` → `on`, `off`, `toggle`), with call signatures. Ctrl+Space opens it.
+  - *Plotter* tab graphs numbers your code prints, e.g. `print("temp:", t)`.
+  - *UART* tab acts as a USB-serial adapter on UART0 (GP0/GP1): `machine.UART` output appears there, and text typed there arrives at `uart.read()` / `readline()`.
+  - *Resizing:* drag the bars to resize the console and the lower panel.
 - **Run, Stop and a time limit** (10 s to 5 min). Stop, the time limit or an error resets every pin to an input, so motors stop.
 - **Program target:** programs run on the Pico on the breadboard or on the Pico docked in the Kitronik driver.
 - **Starter programs:** WNE103 continuous servo, WNE103 standard servo, WNE103 robot drive (square pattern), WNE103 motor forward and reverse, LED blink, traffic light, Timer blink, servo sweep, continuous servo, motor forward and reverse, motor speed ramp, two motors with a library, a limit switch that stops a motor, switch input, thermistor temperature and IR distance.
-- **Not simulated:** Wi-Fi, Bluetooth, I2C, SPI and UART. None of the lab's parts use them.
+- **Not simulated:** Wi-Fi, Bluetooth, I2C and SPI. None of the lab's parts use them.
 
 **Live inputs.** A running program reads switch presses and sensor sliders as they change. That needs the browser's cross-origin isolation, which `coi-sw.js` turns on for GitHub Pages. On hosts without it, programs still run, but they see input values from the moment they started.
 

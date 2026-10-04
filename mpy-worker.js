@@ -6,6 +6,8 @@ let inputs = new Float64Array(40).fill(NaN); // [0..29] GPIO volts (NaN = floati
 let sleeper = null;                           // Int32Array on shared memory, used to sleep without spinning
 const pulls = {};                             // GPIO number -> 'pu' | 'pd' | 'in', as set by the program
 let pending = {}, outBuf = [], lastFlush = 0, t0 = 0;
+let rxHdr = null, rxBuf = null, uartPend = '';      // UART: shared ring buffer for text typed in the UART panel
+const dec = new TextDecoder();
 
 function flush(force) {
   const now = performance.now();
@@ -13,6 +15,7 @@ function flush(force) {
   lastFlush = now;
   if (Object.keys(pending).length) { postMessage({ t: 'pins', pins: pending }); pending = {}; }
   if (outBuf.length) postMessage({ t: 'out', lines: outBuf.splice(0).slice(-300) });
+  if (uartPend) { postMessage({ t: 'uart', s: uartPend.slice(-4000) }); uartPend = ''; }
 }
 
 function wait(ms) {
@@ -53,6 +56,13 @@ const sim = {
   ticks_us() { return Math.floor((performance.now() - t0) * 1000); },
   now_ms() { return Date.now(); },
   reset() { flush(true); postMessage({ t: 'reset' }); },
+  uart_open(id, baud) { flush(true); postMessage({ t: 'uartopen', id, baud }); },
+  uart_write(id, text) { uartPend += text; flush(false); },
+  uart_any() { return rxHdr ? Atomics.load(rxHdr, 0) - Atomics.load(rxHdr, 1) : 0; },
+  uart_read(id, n) { const avail = sim.uart_any(); if (!avail) return ''; const take = n < 0 ? avail : Math.min(n, avail), r = Atomics.load(rxHdr, 1);
+    const bytes = new Uint8Array(take); for (let i = 0; i < take; i++) bytes[i] = rxBuf[(r + i) % 4096]; Atomics.store(rxHdr, 1, r + take); return dec.decode(bytes); },
+  uart_readline(id) { const avail = sim.uart_any(); if (!avail) return ''; const r = Atomics.load(rxHdr, 1);
+    for (let i = 0; i < avail; i++) if (rxBuf[(r + i) % 4096] === 10) return sim.uart_read(id, i + 1); return ''; },
 };
 
 const SCHED_PY = `import _sim
@@ -336,7 +346,7 @@ class Timer:
 
 class _NotSimulated:
     def __init__(self, *args, **kwargs):
-        raise NotImplementedError(type(self).__name__ + " is not simulated: this lab has no I2C, SPI or UART devices")
+        raise NotImplementedError(type(self).__name__ + " is not simulated: this lab has no I2C or SPI devices")
 
 class I2C(_NotSimulated):
     pass
@@ -350,8 +360,42 @@ class SPI(_NotSimulated):
 class SoftSPI(_NotSimulated):
     pass
 
-class UART(_NotSimulated):
-    pass
+class UART:
+    def __init__(self, id=0, baudrate=115200, bits=8, parity=None, stop=1, **kwargs):
+        if id not in (0, 1):
+            raise ValueError("UART id must be 0 or 1")
+        self._id = id
+        self._baud = baudrate
+        _sim.uart_open(id, int(baudrate))
+
+    def init(self, baudrate=115200, **kwargs):
+        self._baud = baudrate
+        _sim.uart_open(self._id, int(baudrate))
+
+    def write(self, buf):
+        text = buf if isinstance(buf, str) else str(bytes(buf), "utf-8")
+        _sim.uart_write(self._id, text)
+        return len(buf)
+
+    def any(self):
+        return int(_sim.uart_any(self._id))
+
+    def read(self, nbytes=-1):
+        text = _sim.uart_read(self._id, -1 if nbytes is None else int(nbytes))
+        return text.encode() if text else None
+
+    def readline(self):
+        text = _sim.uart_readline(self._id)
+        return text.encode() if text else None
+
+    def flush(self):
+        pass
+
+    def txdone(self):
+        return True
+
+    def deinit(self):
+        pass
 
 def freq(f=None):
     return 150000000 if f is None else None
@@ -429,7 +473,7 @@ _simsched._idle()
 onmessage = async (e) => {
   const m = e.data;
   if (!m || m.t !== 'run') return;
-  if (m.sab) { inputs = new Float64Array(m.sab, 0, 40); sleeper = new Int32Array(m.sab, 320, 1); }
+  if (m.sab) { inputs = new Float64Array(m.sab, 0, 40); sleeper = new Int32Array(m.sab, 320, 1); rxHdr = new Int32Array(m.sab, 336, 2); rxBuf = new Uint8Array(m.sab, 344, 4096); }
   else if (m.inputs) inputs = Float64Array.from(m.inputs);
   let mp;
   try {

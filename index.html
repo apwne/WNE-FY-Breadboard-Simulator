@@ -34,6 +34,8 @@
   --warn:#a85d06; --warn-bg:#fdf1de; --bad:#bf2a20; --bad-bg:#fbe4e1; --ok:#167a3c;
   --syn-kw:#8a2bb5; --syn-str:#2f7d32; --syn-num:#b4560a; --syn-com:#7d8a86; --syn-fn:#0e6fa8; --syn-call:#1f5f8b; --sel:rgba(14,116,104,.25);
   --con-bg:#0f1716; --con-fg:#d9e6e2; --con-err:#ff8a7e; --con-sys:#7fb8ad;
+  --wk-wire:#000; --wk-cable:rgba(0,0,0,.45);
+  --bb:#f3f2ec; --bb-edge:#c9c7bc; --bb-groove:#e2e0d6; --bb-label:#8b8a80; --bb-hole:#3a3f43; --bb-ink:#3d4a47;
   --font-ui:"Archivo", "Segoe UI", system-ui, sans-serif;
   --font-mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
@@ -41,14 +43,16 @@
   --bg:#101716; --panel:#182120; --ink:#e3ecea; --muted:#90a29d; --line:#2a3634; --chip:#1f2a28;
   --mat:#1b2f2c; --matdot:#25403c; --accent:#3cc9b6; --accent-ink:#04211d; --accent-soft:#16413b;
   --warn:#f0a83a; --warn-bg:#3a2a12; --bad:#ff7a6e; --bad-bg:#3d1a17; --ok:#55d68a;
-  --syn-kw:#d8a0ff; --syn-str:#9ad69a; --syn-num:#f3b06b; --syn-com:#7f918c; --syn-fn:#7cc4f0; --syn-call:#9fc9e8; --sel:rgba(60,201,182,.3); color-scheme:dark } }
+  --syn-kw:#d8a0ff; --syn-str:#9ad69a; --syn-num:#f3b06b; --syn-com:#7f918c; --syn-fn:#7cc4f0; --syn-call:#9fc9e8; --sel:rgba(60,201,182,.3); --wk-cable:#7f8a90; color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#101716; --panel:#182120; --ink:#e3ecea; --muted:#90a29d; --line:#2a3634; --chip:#1f2a28;
   --mat:#1b2f2c; --matdot:#25403c; --accent:#3cc9b6; --accent-ink:#04211d; --accent-soft:#16413b;
   --warn:#f0a83a; --warn-bg:#3a2a12; --bad:#ff7a6e; --bad-bg:#3d1a17; --ok:#55d68a;
-  --syn-kw:#d8a0ff; --syn-str:#9ad69a; --syn-num:#f3b06b; --syn-com:#7f918c; --syn-fn:#7cc4f0; --syn-call:#9fc9e8; --sel:rgba(60,201,182,.3); color-scheme:dark }
+  --syn-kw:#d8a0ff; --syn-str:#9ad69a; --syn-num:#f3b06b; --syn-com:#7f918c; --syn-fn:#7cc4f0; --syn-call:#9fc9e8; --sel:rgba(60,201,182,.3); --wk-cable:#7f8a90; color-scheme:dark }
 
 [hidden]{display:none!important}
+:root[data-board="dark"]{ --wk-wire:#9aa5ab; --bb:#2a3033; --bb-edge:#11161a; --bb-groove:#1f2427; --bb-label:#8d9a96; --bb-hole:#0a0d0f; --bb-ink:#c9d4d1; }
+.bb-body{fill:var(--bb);stroke:var(--bb-edge)} :root[data-board="dark"] .bb-hole{stroke:#4c565b;stroke-width:.8} .bb-groove{fill:var(--bb-groove)} .bb-hole{fill:var(--bb-hole)} .bb-lab{fill:var(--bb-label)} .bb-ink{fill:var(--bb-ink)}
 body{margin:0}
 img{max-width:100%}
 html,body{height:100%}
@@ -176,8 +180,8 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
 .cb-l{display:flex;align-items:center;gap:5px;color:var(--muted)}
 .code-status{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .code-confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:7px 10px;background:var(--warn-bg);font-size:12.5px;border-bottom:1px solid var(--line)}
-.code-main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,36%)}
-.code-left{display:flex;flex-direction:column;min-width:0;min-height:0;border-right:1px solid var(--line)}
+.code-main{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 6px minmax(220px,36%)}
+.code-left{display:flex;flex-direction:column;min-width:0;min-height:0}
 .ftabs{display:flex;gap:3px;padding:5px 8px 0;align-items:flex-end;flex-wrap:wrap}
 .ftab{border:1px solid var(--line);border-bottom:0;background:var(--panel);border-radius:6px 6px 0 0;padding:4px 10px;font:12px var(--font-mono);cursor:pointer;color:var(--muted);display:flex;gap:6px;align-items:center}
 .ftab.on{background:var(--chip);color:var(--ink);font-weight:600}
@@ -201,6 +205,32 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
 .con-head{display:flex;gap:8px;align-items:center;padding:5px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
 .console{flex:1 1 auto;overflow:auto;padding:6px 10px;font:12px/1.5 var(--font-mono);background:var(--con-bg);color:var(--con-fg);white-space:pre-wrap;overflow-wrap:anywhere;min-height:0}
 .console .e{color:var(--con-err)} .console .s{color:var(--con-sys)}
+
+/* splitters, plotter, UART, autocomplete, wires */
+.vsplit{background:var(--line);cursor:col-resize;touch-action:none}
+.vsplit:hover,.vsplit.on{background:var(--accent)}
+.hsplit{flex:none;height:8px;margin:-9px 0;cursor:row-resize;touch-action:none;z-index:3;border-radius:4px}
+.hsplit:hover,.hsplit.on{background:var(--accent);opacity:.6}
+.ctab{border:0;background:none;padding:3px 8px;border-radius:5px;font-weight:600;font-size:12.5px;color:var(--muted);cursor:pointer}
+.ctab.on{background:var(--accent-soft);color:var(--accent)}
+.plotwrap{flex:1 1 auto;min-height:0;position:relative;background:var(--con-bg);display:flex;flex-direction:column}
+.plotwrap canvas{flex:1 1 auto;min-height:0;display:block}
+.plotempty{position:absolute;inset:0;display:grid;place-items:center;padding:16px;text-align:center;color:var(--con-sys);font-size:12.5px}
+.plotempty code{font-family:var(--font-mono);color:var(--con-fg)}
+.plotleg{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 10px 6px;font:11.5px var(--font-mono);color:var(--con-fg)}
+.plotleg i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:5px;vertical-align:3px}
+.uartwrap{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:var(--con-bg)}
+.uart-st{font:11px var(--font-mono);color:var(--con-sys);padding:5px 10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.uart-out{flex:1 1 auto;min-height:0;overflow:auto;padding:6px 10px;font:12px/1.5 var(--font-mono);color:var(--con-fg);white-space:pre-wrap;overflow-wrap:anywhere}
+.uart-out .tx{color:#e8b34a} .uart-out .sys{color:var(--con-sys)}
+.uart-in{display:flex;gap:6px;padding:6px;border-top:1px solid rgba(255,255,255,.08)}
+.uart-in input{flex:1;min-width:0;font:12px var(--font-mono);padding:5px 8px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.ac{position:absolute;z-index:6;min-width:220px;max-width:420px;max-height:220px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:7px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:3px;font:12px var(--font-mono)}
+.ac-i{display:flex;justify-content:space-between;gap:14px;padding:3px 8px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.ac-i.on{background:var(--accent-soft)}
+.ac-i small{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
+.ac-i .k{font-size:9.5px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-right:6px}
+.bendh{fill:#fff;stroke:var(--accent);stroke-width:2;cursor:move}
 
 /* trace, show me, health, why */
 .tracebar{position:absolute;left:50%;top:10px;transform:translateX(-50%);max-width:calc(100% - 20px);display:flex;align-items:center;gap:4px;flex-wrap:wrap;background:var(--panel);border:1px solid #e0891b;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.16);padding:6px 8px 6px 10px;z-index:5;font-size:12.5px}
@@ -320,7 +350,8 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
   .legend{top:auto;bottom:10px;right:54px}
   .schem{flex:none;height:520px}
   .code-main{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(200px,1fr) 150px}
-  .code-left{border-right:0;border-bottom:1px solid var(--line)}
+  .code-left{border-bottom:1px solid var(--line)}
+  .vsplit,.hsplit{display:none!important}
   body{overflow:auto;height:auto}
   #app{height:auto}
   .main{grid-template-columns:minmax(0,1fr)}
@@ -357,6 +388,7 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
       <button class="btn" id="bCode" title="Program the Pico in MicroPython">Code</button>
       <label class="tog" title="Reveal the metal strips under the holes, coloured by voltage"><input type="checkbox" id="cX"> Show strips</label>
       <label class="tog"><input type="checkbox" id="cFlow" checked> Current flow</label>
+      <button class="btn" id="bTheme" title="Light, dark, or follow your system setting">Theme: System</button>
       <button class="btn danger" id="bClear">Clear board</button>
     </div>
   </header>
@@ -379,6 +411,7 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
         <button class="btn" id="zFit" title="Fit everything" style="font-size:11px">Fit</button>
       </div>
     </div>
+      <div class="hsplit" id="hsplit" hidden title="Drag to resize"></div>
       <div class="schem" id="schem" hidden>
         <div class="pane-tabs"><button class="ptab" data-ptab="sch">Schematic</button><button class="ptab" data-ptab="code">MicroPython</button><button class="ptab" data-ptab="check">Check</button><span class="runpill" id="runPill" hidden>running</span><span style="flex:1"></span><button class="btn" id="bSchBig" style="padding:3px 10px">Expand</button><button class="iconbtn" id="bPaneX" aria-label="Close panel">✕</button></div>
         <div class="pane" id="paneSch">
@@ -404,7 +437,11 @@ input[type=number]{width:96px;font-family:var(--font-mono);font-size:12.5px}
             <div class="code-left"><div class="ftabs" id="ftabs"></div>
               <div class="ed" id="ed"><div class="ed-g" id="edG"></div><div class="ed-c"><pre id="edH" aria-hidden="true"></pre><textarea id="edT" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off" aria-label="MicroPython code editor"></textarea></div></div>
             </div>
-            <div class="con-wrap"><div class="con-head"><b>Console</b><span class="note" id="liveNote"></span><span style="flex:1"></span><button class="linkbtn" id="bConClear">Clear</button></div><div class="console" id="con" aria-live="polite"></div></div>
+            <div class="vsplit" id="vsplit" title="Drag to resize"></div><div class="con-wrap"><div class="con-head"><button class="ctab on" data-ctab="con">Console</button><button class="ctab" data-ctab="plot">Plotter</button><button class="ctab" data-ctab="uart">UART</button><span class="note" id="liveNote"></span><span style="flex:1"></span><button class="linkbtn" id="bPlotPause" hidden>Pause</button><button class="linkbtn" id="bConClear">Clear</button></div>
+              <div class="console" id="con" aria-live="polite"></div>
+              <div class="plotwrap" id="plotWrap" hidden><canvas id="plotCv"></canvas><div class="plotempty" id="plotEmpty">Print numbers and they appear here, e.g. <code>print("temp:", t)</code> or <code>print(a, b)</code>.</div><div class="plotleg" id="plotLeg"></div></div>
+              <div class="uartwrap" id="uartWrap" hidden><div class="uart-st" id="uartSt">UART0 · Pico TX (GP0) → this panel, this panel → Pico RX (GP1) · not opened yet</div><div class="uart-out" id="uartOut"></div>
+                <div class="uart-in"><input id="uartIn" type="text" placeholder="Text to send to the Pico (Enter sends)" autocomplete="off" aria-label="Text to send over UART"><select class="in" id="uartEol" aria-label="Line ending"><option value="lf">LF</option><option value="crlf">CR+LF</option><option value="none">none</option></select><button class="btn" id="bUartSend">Send</button></div></div></div>
           </div>
           <input type="file" id="fileUp" accept=".py,text/x-python,text/plain" multiple hidden>
         </div>
@@ -508,8 +545,12 @@ function attPos(a){
   if(!a) return [0,0];
   if(a.k==='h') return [a.c*P, a.r*P];
   if(a.k==='f') return [a.x, a.y];
-  const m=byId(a.p); if(!m) return [0,0]; const t=DEF[m.type].terms[a.i]; return [m.x+t[0], m.y+t[1]];
+  const m=byId(a.p); if(!m) return [0,0]; const t=DEF[m.type].terms[a.i]; return modXY(m,t[0],t[1]);
 }
+/* Modules turn in 90° steps about their own centre; terminals, cable exits and directions turn with them. */
+function modXY(m,lx,ly){ const d=DEF[m.type], r=(m.rot||0)%4; if(!r) return [m.x+lx,m.y+ly]; const cx=d.w/2, cy=d.h/2; let dx=lx-cx, dy=ly-cy; for(let i=0;i<r;i++){ const t=dx; dx=-dy; dy=t; } return [m.x+cx+dx,m.y+cy+dy]; }
+function modDir(m,dir){ let [dx,dy]=dir; for(let i=0;i<(m.rot||0)%4;i++){ const t=dx; dx=-dy; dy=t; } return [dx,dy]; }
+function modTf(m){ const d=DEF[m.type], r=(m.rot||0)%4; return `translate(${m.x},${m.y})`+(r?` rotate(${r*90} ${d.w/2} ${d.h/2})`:''); }
 function leadGeom(p){ const a=attPos(p.ends[0]), b=attPos(p.ends[1]); const dx=b[0]-a[0], dy=b[1]-a[1]; return {a,b,L:Math.hypot(dx,dy)||1,ang:Math.atan2(dy,dx)*180/Math.PI,mx:(a[0]+b[0])/2,my:(a[1]+b[1])/2}; }
 const LN = g => `x1="${g.a[0]}" y1="${g.a[1]}" x2="${g.b[0]}" y2="${g.b[1]}"`;
 function legs(g){ return `<line ${LN(g)} stroke="#6f777d" stroke-width="3.2" stroke-linecap="round"/><line ${LN(g)} stroke="#b9c0c6" stroke-width="1.8" stroke-linecap="round"/>`; }
@@ -518,24 +559,25 @@ const flowSp = I => Math.sign(I)*(14+50*Math.min(1,Math.abs(I)/0.2));
 function cablePath(o,e,dir){ const d=Math.hypot(e[0]-o[0],e[1]-o[1]); const k=Math.min(70,d*0.45); const c1=[o[0]+dir[0]*k,o[1]+dir[1]*k];
   const ux=(o[0]-e[0])/(d||1), uy=(o[1]-e[1])/(d||1); const k2=Math.min(45,d*0.3); const c2=[e[0]+ux*k2*0.4, e[1]-k2]; return `M${o[0]},${o[1]} C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${e[0]},${e[1]}`; }
 function moduleCables(p, S){ const d=DEF[p.type]; let s='';
-  d.leads.forEach((l,i)=>{ const o=[p.x+l.o[0], p.y+l.o[1]], e=attPos(p.ends[i]); const path=cablePath(o,e,l.dir||[0,1]);
-    s+=`<path d="${path}" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="4.6" stroke-linecap="round"/><path d="${path}" fill="none" stroke="${l.col}" stroke-width="3" stroke-linecap="round"/>`;
+  d.leads.forEach((l,i)=>{ const o=modXY(p,l.o[0],l.o[1]), e=attPos(p.ends[i]); const path=cablePath(o,e,modDir(p,l.dir||[0,1]));
+    s+=`<path d="${path}" fill="none" stroke="rgba(0,0,0,.45)"${l.col==='#262626'?' style="stroke:var(--wk-cable)"':''} stroke-width="4.6" stroke-linecap="round"/><path d="${path}" fill="none" stroke="${l.col}" stroke-width="3" stroke-linecap="round"/>`;
     if(showFlow && S.leadI && Math.abs(S.leadI[i]||0)>2e-4) s+=`<path class="flow cable-flow" data-sp="${flowSp(S.leadI[i])}" d="${path}"/>`;
     s+=`<rect x="${e[0]-3.5}" y="${e[1]-9}" width="7" height="9" rx="1.5" fill="#1d2124"/><circle cx="${e[0]}" cy="${e[1]}" r="2" fill="#c9cfd4"/>`; });
   return s; }
-function txt(x,y,s,o={}){ return `<text x="${x}" y="${y}" font-size="${o.fs||7}" fill="${o.fill||'#fff'}" text-anchor="${o.a||'start'}"${o.w?` font-weight="${o.w}"`:''}${o.tr?` transform="${o.tr}"`:''}>${esc(s)}</text>`; }
+function txt(x,y,s,o={}){ return `<text x="${x}" y="${y}" font-size="${o.fs||7}" fill="${o.fill||'#fff'}"${o.cls?` class="${o.cls}"`:''} text-anchor="${o.a||'start'}"${o.w?` font-weight="${o.w}"`:''}${o.tr?` transform="${o.tr}"`:''}>${esc(s)}</text>`; }
 function screw(x,y){ return `<circle cx="${x}" cy="${y}" r="7.5" fill="#cfd5da" stroke="#7b848b"/><line x1="${x-4.5}" y1="${y+2.5}" x2="${x+4.5}" y2="${y-2.5}" stroke="#6b737a" stroke-width="1.6"/>`; }
 function hdrPin(x,y){ return `<rect x="${x-5}" y="${y-5}" width="10" height="10" fill="#1a1a1a"/><rect x="${x-2}" y="${y-2}" width="4" height="4" fill="#d9b44a"/>`; }
 
 /* ================= part definitions ================= */
 const DEF = {};
 
-DEF.wire = { kind:'lead', z:4, name:'Jumper wire', short:'Wire', desc:'Drag an end to re-plug it, or drag the middle to move the whole wire.',
+DEF.wire = { kind:'lead', z:4, name:'Jumper wire', short:'Wire', desc:'Drag an end to re-plug it, or the middle to move it. Double-click the wire to add a bend; drag a bend to reroute it, double-click it to remove it.',
   pinNames:['end 1','end 2'], props:{color:'#e23b3b'}, vec:[3,0],
   el(p,c){ c.add(R(c.n(0),c.n(1),p.props.broken?1e12:0.02),'w'); },
-  render(p,S){ const g=leadGeom(p), w=wireCol(p.props.color);
-    let s=`<line ${LN(g)} stroke="${w.d}" stroke-width="6.6" stroke-linecap="round"/><line ${LN(g)} stroke="${w.c}" stroke-width="4.4" stroke-linecap="round"/>`;
-    if(showFlow && S.I && Math.abs(S.I)>2e-4) s+=`<line class="flow" data-sp="${flowSp(S.I)}" ${LN(g)}/>`;
+  render(p,S){ const w=wireCol(p.props.color), pts=[attPos(p.ends[0]),...(p.bends||[]),attPos(p.ends[1])], d='M'+pts.map(q=>q[0]+','+q[1]).join(' L');
+    let s=`<path d="${d}" fill="none" stroke="${w.d}"${w.c==='#262626'?' style="stroke:var(--wk-wire)"':''} stroke-width="6.6" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${w.c}" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if(showFlow && S.I && Math.abs(S.I)>2e-4) s+=`<path class="flow" data-sp="${flowSp(S.I)}" d="${d}"/>`;
+    if(p.id===sel&&p.bends) s+=p.bends.map((b,k)=>`<circle class="bendh" data-bend="${p.id}:${k}" cx="${b[0]}" cy="${b[1]}" r="5"/>`).join('');
     return s+endDots(p); },
   an(p,A,o){ o.I=A.refs.w.I; o.ro.push(['Current', fmtI(Math.abs(o.I))]); if(p.ends.some(a=>a.k==='f')) A.warn('warn','A wire end is loose. Drop it on a hole until its ring turns green.'); },
   insp(p){ return `<div class="field"><h4>Colour</h4><div class="swatches">${WIRES.map(w=>`<button class="sw${p.props.color===w[0]?' on':''}" style="background:${w[0]}" title="${w[2]}" data-set="color" data-val="${w[0]}"></button>`).join('')}</div></div>`; }
@@ -595,7 +637,7 @@ DEF.slide = { kind:'fixed', z:1, name:'Slide switch (SPDT)', short:'Slide switch
       <rect x="-9" y="-19" width="58" height="15" rx="2" fill="#2d3236" stroke="#111"/>
       <rect x="1" y="-16" width="38" height="9" rx="1.5" fill="#15181a"/>
       <rect class="act" data-act="toggle" x="${kx}" y="-17.5" width="14" height="12" rx="2" fill="#e8e8e8" stroke="#888"/>
-      ${txt(20,-22,p.props.pos?'→ 2–3':'1–2 ←',{fs:6.5,fill:'#3d4a47',a:'middle'})}
+      ${txt(20,-22,p.props.pos?'→ 2–3':'1–2 ←',{fs:6.5,fill:'#3d4a47',cls:'bb-ink',a:'middle'})}
     </g>`; },
   an(p,A,o){ o.ro.push(['Position', p.props.pos? 'Right: common ↔ pin 3' : 'Left: common ↔ pin 1']); },
   insp(p){ return `<div class="field"><h4>Position</h4><div class="chips"><button class="chipb${!p.props.pos?' on':''}" data-set="pos" data-val="0">Left (1–2)</button><button class="chipb${p.props.pos?' on':''}" data-set="pos" data-val="1">Right (2–3)</button></div></div>`; }
@@ -616,7 +658,7 @@ DEF.reg = { kind:'fixed', z:1, name:'LD1117-3.3 regulator (TO-220)', short:'LD11
       <rect x="-11" y="-50" width="62" height="20" rx="1.5" fill="#c3c9ce" stroke="#7e868c"/><circle cx="20" cy="-40" r="5" fill="#8e969c" stroke="#666"/>
       <rect x="-11" y="-31" width="62" height="25" rx="1.5" fill="#1b1d20" stroke="${hot?'#ff5a1f':'#000'}" stroke-width="${hot?2:1}"/>
       ${txt(20,-21,'LD1117',{fs:7,a:'middle',w:600})}${txt(20,-13,'3.3 V',{fs:6.5,a:'middle',fill:'#bbb'})}
-      ${txt(0,-34+30+16,'G',{fs:6,a:'middle',fill:'#3d4a47'})}${txt(P,12,'O',{fs:6,a:'middle',fill:'#3d4a47'})}${txt(2*P,12,'I',{fs:6,a:'middle',fill:'#3d4a47'})}
+      ${txt(0,-34+30+16,'G',{fs:6,a:'middle',fill:'#3d4a47',cls:'bb-ink'})}${txt(P,12,'O',{fs:6,a:'middle',fill:'#3d4a47',cls:'bb-ink'})}${txt(2*P,12,'I',{fs:6,a:'middle',fill:'#3d4a47',cls:'bb-ink'})}
     </g>`; },
   an(p,A,o){ const g=A.node(0), out=A.node(1), vin=A.node(2); const st=A.refs.reg.s.st;
     const vi = A.v(vin)!=null&&A.v(g)!=null ? A.v(vin)-A.v(g) : null, vo = A.v(out)!=null&&A.v(g)!=null ? A.v(out)-A.v(g) : null;
@@ -635,7 +677,7 @@ DEF.psu = { kind:'module', z:3, name:'Bench power supply', short:'Power supply',
   leads:[{name:'+ (red)',col:'#d92f2f',o:[95,58],fl:[112,118]},{name:'− (black)',col:'#262626',o:[35,58],fl:[20,118]}],
   el(p,c){ c.add(Vs(c.n(0),c.n(1),p.props.volts,0.05),'v'); c.gnd(c.n(1)); },
   render(p,S){ const I=S.Iout||0, over=I>2;
-    return `<g transform="translate(${p.x},${p.y})"><rect width="130" height="66" rx="7" fill="#2b3036" stroke="#121518"/>
+    return `<g transform="${modTf(p)}"><rect width="130" height="66" rx="7" fill="#2b3036" stroke="#121518"/>
       <rect x="9" y="9" width="80" height="34" rx="3" fill="#0b1a10"/>
       ${txt(15,24,p.props.volts.toFixed(2)+' V',{fs:12,fill:over?'#ff6b5e':'#7dffa5',w:600})}${txt(15,37,I>=2.999?'SHORT · 3.00 A':fmtI(I),{fs:8.5,fill:over?'#ff6b5e':'#7dffa5'})}
       <circle cx="109" cy="25" r="12" fill="#4b525a" stroke="#1d2125"/><line x1="109" y1="25" x2="${109+9*Math.cos((-220+260*p.props.volts/15)*Math.PI/180)}" y2="${25+9*Math.sin((-220+260*p.props.volts/15)*Math.PI/180)}" stroke="#ddd" stroke-width="2" stroke-linecap="round"/>
@@ -653,7 +695,7 @@ DEF.batt = { kind:'module', z:3, name:'AA battery pack', short:'AA battery pack'
   leads:[{name:'+',col:'#d92f2f',o:[0,18],dir:[-1,0],fl:[-60,8]},{name:'−',col:'#262626',o:[0,40],dir:[-1,0],fl:[-60,48]}],
   el(p,c){ c.add(Vs(c.n(0),c.n(1),1.5*p.props.cells,0.4),'v'); c.gnd(c.n(1)); },
   render(p,S){ const n=p.props.cells; let cells=''; for(let i=0;i<n;i++){ const x=8+(i%2)*56, y=8+Math.floor(i/2)*22, flip=i%2; cells+=`<rect x="${x}" y="${y}" width="50" height="18" rx="4" fill="#2b2e33" stroke="#555"/><rect x="${flip?x:x+38}" y="${y}" width="12" height="18" rx="3" fill="#c98a3c"/>`; }
-    return `<g transform="translate(${p.x},${p.y})"><rect width="120" height="${n>2?58:36}" rx="6" fill="#111" stroke="#000"/>${cells}${txt(60,n>2?54:33,`${n}×AA · ${(1.5*n).toFixed(1)} V`,{fs:6.5,fill:'#bbb',a:'middle'})}</g>`+moduleCables(p,S)+endDots(p); },
+    return `<g transform="${modTf(p)}"><rect width="120" height="${n>2?58:36}" rx="6" fill="#111" stroke="#000"/>${cells}${txt(60,n>2?54:33,`${n}×AA · ${(1.5*n).toFixed(1)} V`,{fs:6.5,fill:'#bbb',a:'middle'})}</g>`+moduleCables(p,S)+endDots(p); },
   an(p,A,o){ const I=A.refs.v.I; o.leadI=[I,-I]; o.ro.push(['Voltage',(1.5*p.props.cells).toFixed(1)+' V nominal'],['Current',fmtI(I)]);
     if(I>2.5) A.warn('bad','The battery pack is shorted: a wire or part joins + straight to −.'); },
   insp(p){ return `<div class="field"><h4>Cells</h4><div class="chips">${[2,3,4].map(n=>`<button class="chipb${p.props.cells===n?' on':''}" data-set="cells" data-val="${n}">${n}×AA · ${(1.5*n).toFixed(1)} V</button>`).join('')}</div></div>`; }
@@ -714,7 +756,7 @@ DEF.driver = { kind:'module', z:3, name:'Kitronik Motor Driver Board for Pico', 
       upd(S){ const en=pc.core.s.on && S.v(VM)-S.v(G)>=2.7; if(en!==this.s.en){this.s.en=en;return true;} return false; } };
     c.add(drv,'drv'); c.gnd(G); },
   render(p,S){ const d=DEF.driver; const on=p.props.on;
-    let s=`<g transform="translate(${p.x},${p.y})"><rect width="380" height="230" rx="10" fill="#1d2a25" stroke="#0b120f"/>
+    let s=`<g transform="${modTf(p)}"><rect width="380" height="230" rx="10" fill="#1d2a25" stroke="#0b120f"/>
       ${[[12,12],[368,12],[12,218],[368,218]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="#0b120f" stroke="#c9b87a"/>`).join('')}
       <g class="act" data-act="power"><rect x="16" y="30" width="46" height="20" rx="3" fill="#0e1512" stroke="#4d5a55"/><rect x="${on?39:19}" y="33" width="20" height="14" rx="2" fill="${on?'#3cc9b6':'#9aa3a8'}"/>
       ${txt(39,62,on?'ON':'OFF',{fs:8,a:'middle',fill:on?'#7fe3d3':'#9aa3a8',w:600})}</g>
@@ -767,7 +809,7 @@ function servoDef(cont){ return { kind:'module', z:3, name: cont?'Continuous rot
   render(p,S){ const a=anim[p.id]?.ang ?? (cont?0:90);
     const horn = cont ? `<g data-spin="${p.id}" data-mode="spd" data-cx="28" data-cy="24" transform="rotate(${a} 28 24)"><rect x="4" y="20.5" width="48" height="7" rx="3.5" fill="#f4f4f4" stroke="#999"/><rect x="24.5" y="0" width="7" height="48" rx="3.5" fill="#f4f4f4" stroke="#999"/><circle cx="28" cy="24" r="5" fill="#ddd" stroke="#888"/></g>`
       : `<g data-spin="${p.id}" data-mode="pos" data-cx="28" data-cy="24" transform="rotate(${-a} 28 24)"><path d="M28,18 L62,21.5 A2.5,2.5 0 0 1 62,26.5 L28,30 A6,6 0 0 1 28,18Z" fill="#f4f4f4" stroke="#999"/><circle cx="28" cy="24" r="4" fill="#ddd" stroke="#888"/></g>`;
-    return `<g transform="translate(${p.x},${p.y})">
+    return `<g transform="${modTf(p)}">
       <rect x="-10" y="12" width="116" height="24" rx="3" fill="${cont?'#202428':'#1f4fa3'}" stroke="#0b1530"/><circle cx="-4" cy="24" r="2.6" fill="#111"/><circle cx="100" cy="24" r="2.6" fill="#111"/>
       <rect width="96" height="48" rx="4" fill="${cont?'#2b3035':'#2659b8'}" stroke="#0b1530"/>
       <circle cx="28" cy="24" r="15" fill="${cont?'#1b1f22':'#1d4690'}"/>
@@ -784,7 +826,7 @@ DEF.motor = { kind:'module', z:3, name:'DC gear motor (TT)', short:'DC motor', d
   leads:[{name:'+',col:'#d92f2f',o:[96,17],dir:[1,0],fl:[150,10]},{name:'−',col:'#262626',o:[96,27],dir:[1,0],fl:[150,36]}],
   el(p,c){ c.add(R(c.n(0),c.n(1),20),'m'); },
   render(p,S){ const a=anim[p.id]?.ang||0;
-    return `<g transform="translate(${p.x},${p.y})"><rect x="30" y="6" width="66" height="32" rx="4" fill="#f2c12e" stroke="#9b7a12"/><rect x="70" y="10" width="26" height="24" rx="10" fill="#c7cdd2" stroke="#7e868c"/>
+    return `<g transform="${modTf(p)}"><rect x="30" y="6" width="66" height="32" rx="4" fill="#f2c12e" stroke="#9b7a12"/><rect x="70" y="10" width="26" height="24" rx="10" fill="#c7cdd2" stroke="#7e868c"/>
       <g data-spin="${p.id}" data-mode="spd" data-cx="22" data-cy="22" transform="rotate(${a} 22 22)"><circle cx="22" cy="22" r="21" fill="#2a2a2a"/><circle cx="22" cy="22" r="14" fill="#f2c12e"/>
       ${[0,60,120].map(r=>`<rect x="20" y="9" width="4" height="26" fill="#9b7a12" transform="rotate(${r} 22 22)"/>`).join('')}<circle cx="22" cy="22" r="4" fill="#fff"/></g>
       ${txt(50,26,S.badge||'TT',{fs:7,fill:'#5a4708',w:600})}</g>`+moduleCables(p,S)+endDots(p); },
@@ -802,9 +844,9 @@ DEF.ir = { kind:'module', z:3, name:'IR distance sensor (10–80 cm)', short:'IR
       upd(S){ const v=S.v(vcc)-S.v(g); const on=v>=4.0&&v<=7.5; if(on!==this.s.on){this.s.on=on;return true;} return false; } };
     c.add(s,'ir'); },
   render(p,S){ const d=p.props.dist, L=Math.min(200,d*2);
-    return `<g transform="translate(${p.x},${p.y})">
+    return `<g transform="${modTf(p)}">
       <line x1="55" y1="0" x2="55" y2="${-L}" stroke="#e05555" stroke-width="1.5" stroke-dasharray="4 4" opacity=".8"/>
-      <rect x="30" y="${-L-8}" width="50" height="8" rx="2" fill="#8a6f4e" stroke="#4d3d2a"/>${txt(84,-L-2,d+' cm',{fs:8,fill:'#24302d',w:600})}
+      <rect x="30" y="${-L-8}" width="50" height="8" rx="2" fill="#8a6f4e" stroke="#4d3d2a"/>${txt(84,-L-2,d+' cm',{fs:8,fill:'#24302d',cls:'bb-ink',w:600})}
       <rect x="-6" y="10" width="122" height="14" rx="7" fill="#26292c"/><circle cx="-1" cy="17" r="2.5" fill="#888"/><circle cx="111" cy="17" r="2.5" fill="#888"/>
       <rect width="110" height="34" rx="6" fill="#1b1d1f" stroke="#000"/>
       <circle cx="30" cy="17" r="10" fill="#3a1414" stroke="#555"/><circle cx="80" cy="17" r="10" fill="#151b2e" stroke="#555"/>
@@ -825,7 +867,7 @@ DEF.micro = { kind:'module', z:3, name:'Micro switch with wires (3 terminals)', 
   leads:[{name:'COM',col:'#262626',o:[12,30],fl:[-6,90]},{name:'NO',col:'#d92f2f',o:[30,30],fl:[30,96]},{name:'NC',col:'#2f6fe4',o:[48,30],fl:[66,90]}],
   el(p,c){ const on=p._pressed||p.props.latched; c.add(on? R(c.n(0),c.n(1),0.02) : R(c.n(0),c.n(2),0.02),'s'); },
   render(p){ const on=p._pressed||p.props.latched;
-    return `<g transform="translate(${p.x},${p.y})"><line x1="6" y1="-3" x2="54" y2="${on?-3:-13}" stroke="#c4cbd1" stroke-width="3" stroke-linecap="round"/><circle cx="54" cy="${on?-3:-13}" r="4" fill="#e8e8e8" stroke="#888"/>
+    return `<g transform="${modTf(p)}"><line x1="6" y1="-3" x2="54" y2="${on?-3:-13}" stroke="#c4cbd1" stroke-width="3" stroke-linecap="round"/><circle cx="54" cy="${on?-3:-13}" r="4" fill="#e8e8e8" stroke="#888"/>
       <rect width="60" height="30" rx="2" fill="#26292c" stroke="#000"/><circle cx="14" cy="15" r="2.6" fill="#555"/><circle cx="46" cy="15" r="2.6" fill="#555"/>
       ${txt(30,13,on?'PRESSED':'MICRO SW',{fs:6,fill:on?'#7fe3d3':'#aaa',a:'middle'})}${txt(12,27,'C',{fs:6,fill:'#ddd',a:'middle'})}${txt(30,27,'NO',{fs:6,fill:'#ddd',a:'middle'})}${txt(48,27,'NC',{fs:6,fill:'#ddd',a:'middle'})}</g>`+moduleCables(p,{})+endDots(p); },
   an(p,A,o){ o.ro.push(['Lever',(p._pressed||p.props.latched)?'pressed: COM ↔ NO':'released: COM ↔ NC']); },
@@ -846,8 +888,8 @@ function measureR(els,a,b,self){ if(a===b) return 0; const rs=els.filter(e=>e.t=
   for(const e of rs) u(e.a,e.b); if(f(a)!==f(b)) return Infinity; const ra=f(a);
   const bs=rs.filter(e=>f(e.a)===ra).map(e=>R(e.a,e.b,e.r)); bs.push(Vs(a,b,1e6,1e9)); const sol=solveMNA(bs,[b]); return ((sol.V.get(a)||0)-(sol.V.get(b)||0))/1e-3; }
 function fmtRd(r){ if(r<1000) return [r.toFixed(r<100?1:0),'Ω']; if(r<1e6) return [(r/1e3).toFixed(r<1e4?2:1),'kΩ']; return [(r/1e6).toFixed(2),'MΩ']; }
-function meterProbes(p){ let s=''; DEF.meter.leads.forEach((l,i)=>{ const o=[p.x+l.o[0],p.y+l.o[1]], e=attPos(p.ends[i]); const path=cablePath(o,[e[0],e[1]-26],[0,1]);
-  s+=`<path d="${path}" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="4.4" stroke-linecap="round"/><path d="${path}" fill="none" stroke="${l.col}" stroke-width="2.8" stroke-linecap="round"/>`
+function meterProbes(p){ let s=''; DEF.meter.leads.forEach((l,i)=>{ const o=modXY(p,l.o[0],l.o[1]), e=attPos(p.ends[i]); const path=cablePath(o,[e[0],e[1]-26],modDir(p,[0,1]));
+  s+=`<path d="${path}" fill="none" stroke="rgba(0,0,0,.4)"${l.col==='#262626'?' style="stroke:var(--wk-cable)"':''} stroke-width="4.4" stroke-linecap="round"/><path d="${path}" fill="none" stroke="${l.col}" stroke-width="2.8" stroke-linecap="round"/>`
     +`<rect x="${e[0]-4}" y="${e[1]-27}" width="8" height="21" rx="3" fill="${l.col}" stroke="rgba(0,0,0,.5)"/><line x1="${e[0]}" y1="${e[1]-6}" x2="${e[0]}" y2="${e[1]}" stroke="#d6dbe0" stroke-width="2.2" stroke-linecap="round"/>`; }); return s; }
 DEF.meter = { kind:'module', z:5, probe:true, name:'Digital multimeter', short:'Multimeter', desc:'Click a mode on the dial or below. The probe tips can touch any hole, even one that already holds a leg or wire.',
   w:120, h:184, pinNames:['red probe (VΩmA)','black probe (COM)'], props:{mode:'V',beep:true},
@@ -857,7 +899,7 @@ DEF.meter = { kind:'module', z:5, probe:true, name:'Digital multimeter', short:'
     let dial=''; MM_MODES.forEach(([k,lab],i)=>{ const a=ang(i), x=60+36*Math.sin(a), y=112-36*Math.cos(a);
       dial+=`<g class="act" data-act="mode:${k}"><circle cx="${x}" cy="${y}" r="10" fill="transparent"/>${txt(x,y+3,lab,{fs:8,a:'middle',fill:k===m?'#ffd36b':'#e6e6e6',w:k===m?700:400})}</g>`; });
     const a=ang(mi);
-    return `<g transform="translate(${p.x},${p.y})"><rect width="120" height="184" rx="14" fill="#f2c12e" stroke="#9b7a12"/><rect x="8" y="8" width="104" height="168" rx="9" fill="#2b3036"/>
+    return `<g transform="${modTf(p)}"><rect width="120" height="184" rx="14" fill="#f2c12e" stroke="#9b7a12"/><rect x="8" y="8" width="104" height="168" rx="9" fill="#2b3036"/>
       <rect x="15" y="15" width="90" height="44" rx="4" fill="#c5d3b4" stroke="#7d8a6c"/>
       ${txt(20,25,MM_MODES[mi][2].toUpperCase(),{fs:6,fill:'#3b4a34'})}${S.beep?txt(100,25,'·)))',{fs:7,fill:'#1d2a1a',a:'end',w:700}):''}
       ${txt(100,47,S.disp??'----',{fs:17,fill:'#16210f',a:'end',w:600})}${txt(100,55,S.unit||'',{fs:7,fill:'#2d3a26',a:'end'})}${S.sub?txt(20,55,S.sub,{fs:6,fill:'#2d3a26'}):''}
@@ -1010,7 +1052,7 @@ function snapPt(x,y,occ,selfId,taken,rad=12){
   let best=null, bd=rad*rad; const c0=Math.round(x/P), r0=Math.round(y/P);
   for(let c=c0-1;c<=c0+1;c++) for(let r=r0-1;r<=r0+1;r++){ if(!isHole(c,r)) continue; const k=`h${c},${r}`; if(occ.has(k)||(taken&&taken.has(k))) continue; const d=(c*P-x)**2+(r*P-y)**2; if(d<bd){ bd=d; best=H(c,r); } }
   for(const m of parts){ const d=DEF[m.type]; if(!d.terms||m.id===selfId) continue; const mm=byId(m.id);
-    d.terms.forEach((t,i)=>{ const k=`t${m.id}.${i}`; if(occ.has(k)||(taken&&taken.has(k))) return; const dd=(mm.x+t[0]-x)**2+(mm.y+t[1]-y)**2; if(dd<bd){ bd=dd; best=T(m.id,i); } }); }
+    d.terms.forEach((t,i)=>{ const k=`t${m.id}.${i}`; if(occ.has(k)||(taken&&taken.has(k))) return; const tp=modXY(mm,t[0],t[1]), dd=(tp[0]-x)**2+(tp[1]-y)**2; if(dd<bd){ bd=dd; best=T(m.id,i); } }); }
   return best; }
 const EMPTY=new Map();
 
@@ -1019,24 +1061,25 @@ function renderDefs(){
   $('#defs').innerHTML = Object.entries(LEDC).map(([k,c])=>`<radialGradient id="glow-${k}"><stop offset="0" stop-color="${c.f}" stop-opacity=".95"/><stop offset=".35" stop-color="${c.f}" stop-opacity=".5"/><stop offset="1" stop-color="${c.f}" stop-opacity="0"/></radialGradient>`).join('');
 }
 function renderBoard(){
-  const W=(COLS+1)*P; let s=`<rect x="${-0.3*P}" y="${-1.5*P}" width="${W+0.6*P}" height="${21*P}" rx="10" fill="#f3f2ec" stroke="#c9c7bc"/>`;
-  s+=`<rect x="${0.3*P}" y="${7.85*P}" width="${W-0.6*P}" height="${1.3*P}" rx="3" fill="#e2e0d6"/>`;
-  s+=`<rect x="${0.3*P}" y="${2.05*P}" width="${W-0.6*P}" height="2" fill="#e2e0d6"/><rect x="${0.3*P}" y="${14.9*P}" width="${W-0.6*P}" height="2" fill="#e2e0d6"/>`;
+  const W=(COLS+1)*P; let s=`<rect x="${-0.3*P}" y="${-1.5*P}" width="${W+0.6*P}" height="${21*P}" rx="10" class="bb-body"/>`;
+  s+=`<rect x="${0.3*P}" y="${7.85*P}" width="${W-0.6*P}" height="${1.3*P}" rx="3" class="bb-groove"/>`;
+  s+=`<rect x="${0.3*P}" y="${2.05*P}" width="${W-0.6*P}" height="2" class="bb-groove"/><rect x="${0.3*P}" y="${14.9*P}" width="${W-0.6*P}" height="2" class="bb-groove"/>`;
   const line=(y,c)=>`<line x1="${0.8*P}" y1="${y}" x2="${W-0.8*P}" y2="${y}" stroke="${c}" stroke-width="2"/>`;
   s+=line(-0.7*P,'#d8342c')+line(1.7*P,'#2b62c9')+line(15.3*P,'#d8342c')+line(17.7*P,'#2b62c9');
   for(const [y,t,c] of [[0,'+','#d8342c'],[P,'−','#2b62c9'],[16*P,'+','#d8342c'],[17*P,'−','#2b62c9']]){ s+=txt(0.2*P,y+4,t,{fs:11,fill:c,w:700,a:'middle'})+txt(W-0.2*P,y+4,t,{fs:11,fill:c,w:700,a:'middle'}); }
-  for(let c=1;c<=COLS;c++){ if(c===1||c%5===0){ s+=txt(c*P,2.55*P+2,String(c),{fs:7,fill:'#8b8a80',a:'middle'})+txt(c*P,15.6*P,String(c),{fs:7,fill:'#8b8a80',a:'middle'}); } }
-  for(const r in ROWL){ s+=txt(0.25*P,r*P+3,ROWL[r],{fs:7.5,fill:'#8b8a80',a:'middle'})+txt(W-0.25*P,r*P+3,ROWL[r],{fs:7.5,fill:'#8b8a80',a:'middle'}); }
+  for(let c=1;c<=COLS;c++){ if(c===1||c%5===0){ s+=txt(c*P,2.55*P+2,String(c),{fs:7,cls:'bb-lab',a:'middle'})+txt(c*P,15.6*P,String(c),{fs:7,cls:'bb-lab',a:'middle'}); } }
+  for(const r in ROWL){ s+=txt(0.25*P,r*P+3,ROWL[r],{fs:7.5,cls:'bb-lab',a:'middle'})+txt(W-0.25*P,r*P+3,ROWL[r],{fs:7.5,cls:'bb-lab',a:'middle'}); }
   let holes=''; for(let r=0;r<=17;r++) for(let c=1;c<=COLS;c++) if(isHole(c,r)) holes+=`M${c*P-3.4},${r*P-3.4}h6.8v6.8h-6.8z`;
-  s+=`<path d="${holes}" fill="#3a3f43"/>`;
+  s+=`<path d="${holes}" class="bb-hole"/>`;
   boardG.innerHTML=s;
 }
 function currentList(){ let list=parts.map(p=> drag&&drag.preview&&drag.preview.id===p.id ? drag.preview : p);
   if(drag&&drag.preview&&(drag.mode==='new'||drag.mode==='wire')&&drag.started&&!drag.outside) list=list.concat([drag.preview]);
+  if(route) list=list.concat([routePreview()]);
   return list.sort((a,b)=>DEF[a.type].z-DEF[b.type].z); }
 function renderParts(){
   const list=currentList(); let s='';
-  for(const p of list){ const S=sim.parts[p.id]||{}; const ghost = drag&&drag.preview===p; const bad = ghost&&drag.invalid;
+  for(const p of list){ const S=sim.parts[p.id]||{}; const ghost = (drag&&drag.preview===p)||p._ghost; const bad = ghost&&drag&&drag.invalid;
     s+=`<g class="part${p.id===sel?' sel':''}${ghost?' ghost':''}${bad?' bad':''}" data-pid="${p.id}">${DEF[p.type].render(p,S)}</g>`; }
   partsG.innerHTML=s; drawOverlay();
 }
@@ -1094,7 +1137,7 @@ function renderInspector(){
   h+=`<div class="wl" id="pwarn"></div>`;
   if(d.insp) h+=d.insp(p);
   h+=`<div><h4>Live readings</h4><dl class="ro" id="ro"></dl></div>`;
-  h+=`<div class="acts">${p.props.burnt?'<button class="btn primary" data-act="repair">Repair</button>':''}${d.kind!=='module'?'<button class="btn" data-act="rot">Rotate</button>':''}${!['wire','pico','driver','psu','batt','meter'].includes(p.type)?'<button class="btn" data-act="trace" title="Highlight this part\'s connections to the Pico and your code">Trace</button>':''}<button class="btn" data-act="dup">Duplicate</button><button class="btn" data-act="del">Delete</button></div>`;
+  h+=`<div class="acts">${p.props.burnt?'<button class="btn primary" data-act="repair">Repair</button>':''}<button class="btn" data-act="rot">Rotate</button>${!['wire','pico','driver','psu','batt','meter'].includes(p.type)?'<button class="btn" data-act="trace" title="Highlight this part\'s connections to the Pico and your code">Trace</button>':''}<button class="btn" data-act="dup">Duplicate</button><button class="btn" data-act="del">Delete</button></div>`;
   insp.innerHTML=h; updateReadouts();
 }
 function updateReadouts(){
@@ -1123,7 +1166,7 @@ function undo(){ if(!undoS.length) return; redoS.push(snapshot()); restore(undoS
 function redo(){ if(!redoS.length) return; undoS.push(snapshot()); restore(redoS.pop()); syncBtns(); }
 function saveLS(){ try{ localStorage.setItem('pico-bb-lab-v1', snapshot()); }catch(e){} }
 function commit(){ simulate(); renderParts(); renderXray(); renderSchem(); renderStatus(); updateReadouts(); saveLS(); syncBtns(); if(paneTab==='code') renderTargets(); if(paneTab==='check') renderCheck(); if(traceState&&traceState.gp) traceGP(traceState.gp); if(chal&&chal.def&&chal.def.track) chal.def.track(chal); if(chal&&chal.def&&chal.checked) runCheck(); }
-function syncBtns(){ $('#bUndo').disabled=!undoS.length; $('#bRedo').disabled=!redoS.length; const p=committed(sel); $('#bDel').disabled=!p; $('#bRot').disabled=!p||DEF[p.type].kind==='module'; }
+function syncBtns(){ $('#bUndo').disabled=!undoS.length; $('#bRedo').disabled=!redoS.length; const p=committed(sel); $('#bDel').disabled=!p; $('#bRot').disabled=!p; }
 function select(id){ if(sel===id) return; sel=id; renderInspector(); drawOverlay(); syncBtns(); renderSchem(); partsG.querySelectorAll('.part').forEach(g=>g.classList.toggle('sel', +g.dataset.pid===id)); }
 
 function mk(type, extra={}){ const d=DEF[type]; const p={id:nextId++, type, ...extra, props:{...JSON.parse(JSON.stringify(d.props||{})), ...(extra.props||{})}};
@@ -1134,6 +1177,8 @@ function deletePart(id){ const p=committed(id); if(!p) return; pushHist();
   for(const q of parts){ if(!q.ends) continue; q.ends=q.ends.map(a=> a&&a.k==='t'&&a.p===id ? (()=>{ const [x,y]=attPos(a); return F(x,y); })() : a); }
   parts=parts.filter(q=>q.id!==id); sel=null; renderInspector(); commit(); }
 function rotatePart(id){ const p=committed(id); if(!p) return; const d=DEF[p.type];
+  if(d.kind==='module'){ pushHist(); const cx=p.x+d.w/2, cy=p.y+d.h/2; p.rot=((p.rot||0)+1)%4; p.ends=(p.ends||[]).map(a=>a.k==='f'?F(cx-(a.y-cy),cy+(a.x-cx)):a); commit(); return; }
+  if(p.type==='wire') delete p.bends;
   if(d.kind==='fixed'){ const occ=buildOcc(p.id); for(let k=1;k<4;k++){ const t={...p,rot:((p.rot||0)+k)%4}; if(fixedValid(t,occ)){ pushHist(); p.rot=t.rot; commit(); return; } } flash('There is no room to rotate it here.'); return; }
   if(d.kind==='lead'){ const [ax,ay]=attPos(p.ends[0]), [bx,by]=attPos(p.ends[1]); const nx=ax-(by-ay), ny=ay+(bx-ax); const occ=buildOcc(p.id); const taken=new Set([attKey(p.ends[0])].filter(Boolean));
     pushHist(); p.ends[1]=snapPt(nx,ny,occ,null,taken)||F(nx,ny); commit(); } }
@@ -1141,7 +1186,7 @@ function duplicatePart(id){ const p=committed(id); if(!p) return; const q=JSON.p
   delete q.props.broken; delete q.props.mystery;
   if(d.kind==='fixed'){ const offs=[]; for(let dc=-30;dc<=30;dc++) for(let dr=-14;dr<=14;dr++) if(dc||dr) offs.push([dc,dr]); offs.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));
     const o=offs.find(([dc,dr])=>fixedValid({...q,c:p.c+dc,r:p.r+dr},occ)); if(!o){ flash('No free space for a copy.'); return; } q.c=p.c+o[0]; q.r=p.r+o[1]; }
-  else if(d.kind==='lead'){ const taken=new Set(); q.ends=p.ends.map(a=>{ const [x,y]=attPos(a); const s=snapPt(x+P,y+2*P,occ,null,taken,14); if(s){ taken.add(attKey(s)); return s; } return F(x+P,y+2*P); }); }
+  else if(d.kind==='lead'){ const taken=new Set(); q.ends=p.ends.map(a=>{ const [x,y]=attPos(a); const s=snapPt(x+P,y+2*P,occ,null,taken,14); if(s){ taken.add(attKey(s)); return s; } return F(x+P,y+2*P); }); if(q.bends) q.bends=q.bends.map(([x,y])=>[x+P,y+2*P]); }
   else { q.x+=40; q.y+=40; q.ends=p.ends.map(a=>{ const [x,y]=attPos(a); return F(x+40,y+40); }); }
   pushHist(); parts.push(q); sel=q.id; renderInspector(); commit(); }
 let flashTimer=null; function flash(msg){ sim.flashes=[{pid:null,msg}]; renderStatus(); clearTimeout(flashTimer); flashTimer=setTimeout(()=>{ sim.flashes=[]; renderStatus(); },3500); }
@@ -1180,7 +1225,7 @@ function newPartAt(type, w){ const d=DEF[type]; const tmp={id:-1, type, props:JS
   else if(d.kind==='lead'){ let [vx,vy]=rotOff(d.vec[0],d.vec[1],drag?.rot||0); vx*=P; vy*=P; const occ=drag?.occ||buildOcc(null); const taken=new Set();
     const e0=snapPt(w.x-vx/2,w.y-vy/2,occ,null,taken); if(e0) taken.add(attKey(e0)); const e1=snapPt(w.x+vx/2,w.y+vy/2,occ,null,taken);
     tmp.ends=[e0||F(w.x-vx/2,w.y-vy/2), e1||F(w.x+vx/2,w.y+vy/2)]; }
-  else { tmp.x=Math.round(w.x-d.w/2); tmp.y=Math.round(w.y-d.h/2); tmp.ends=d.leads.map(l=>F(tmp.x+l.fl[0],tmp.y+l.fl[1])); }
+  else { tmp.x=Math.round(w.x-d.w/2); tmp.y=Math.round(w.y-d.h/2); tmp.rot=drag?.rot||0; tmp.ends=d.leads.map(l=>{ const q=modXY(tmp,l.fl[0],l.fl[1]); return F(q[0],q[1]); }); }
   return tmp; }
 function placeAtCenter(type){ const r=cv.getBoundingClientRect(); const w={x:(r.width/2-view.tx)/view.s, y:(r.height/2-view.ty)/view.s}; const d=DEF[type];
   drag={mode:'new',type,rot:0,occ:buildOcc(null)}; let p=newPartAt(type,w);
@@ -1193,9 +1238,11 @@ cv.addEventListener('pointerdown', e=>{
   pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pointers.size===2){ cancelDrag(); const [a,b]=[...pointers.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y), mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; return; }
   if(pointers.size>2) return;
+  if(route){ routeClick(e); return; }
   cv.setPointerCapture(e.pointerId); hideTip();
   const w=toWorld(e), t=e.target;
   if(e.button===1||e.button===2){ startDrag(e,{mode:'pan',tx0:view.tx,ty0:view.ty}); return; }
+  const bendEl=t.closest('[data-bend]'); if(bendEl){ const [pid,k]=bendEl.dataset.bend.split(':').map(Number); startDrag(e,{mode:'bend',pid,k}); return; }
   const endEl=t.closest('[data-end]'), actEl=t.closest('[data-act]'), partEl=t.closest('[data-pid]');
   if(endEl){ const [pid,i]=endEl.dataset.end.split(':').map(Number); startDrag(e,{mode:'end',pid,i}); select(pid); return; }
   if(partEl){ const pid=+partEl.dataset.pid; const p=committed(pid); if(!p) return; select(pid); startDrag(e,{mode:'body',pid,w0:w,act:actEl?.dataset.act});
@@ -1207,6 +1254,7 @@ window.addEventListener('pointermove', e=>{
   if(pointers.has(e.pointerId)) pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pinch&&pointers.size===2){ const [a,b]=[...pointers.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y), mx=(a.x+b.x)/2, my=(a.y+b.y)/2; const r=cv.getBoundingClientRect();
     view.tx+=mx-pinch.mx; view.ty+=my-pinch.my; zoomAt(d/pinch.d, mx-r.left, my-r.top); pinch={d,mx,my}; return; }
+  if(route&&!drag){ const w=toWorld(e); route.cur=[w.x,w.y]; renderParts(); return; }
   if(!drag){ if(e.target===cv||cv.contains(e.target)) hover(e); else { hideTip(); hlG.innerHTML=''; } return; }
   const dist=Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy);
   if(!drag.started){ if(dist<4) return; beginDrag(); }
@@ -1218,7 +1266,7 @@ cv.addEventListener('contextmenu', e=>e.preventDefault());
 cv.addEventListener('pointerleave', ()=>{ if(!drag){ hideTip(); hlG.innerHTML=''; } });
 
 function beginDrag(){ drag.started=true; hideTip(); hlG.innerHTML='';
-  if(drag.mode==='body'||drag.mode==='end'){ const p=committed(drag.pid); if(drag.pressed){ p._pressed=false; drag.pressed=false; simulate(); }
+  if(drag.mode==='body'||drag.mode==='end'||drag.mode==='bend'){ const p=committed(drag.pid); if(drag.pressed){ p._pressed=false; drag.pressed=false; simulate(); }
     drag.orig=JSON.parse(JSON.stringify(p)); drag.preview=JSON.parse(JSON.stringify(p)); drag.occ=buildOcc(p.id);
     if(p.ends) drag.origPos=p.ends.map(a=>attPos(a)); }
   if(drag.mode==='wire'){ drag.occ=buildOcc(null); drag.preview={id:-2,type:'wire',props:{color:wireColor},ends:[drag.a,drag.a]}; }
@@ -1231,10 +1279,11 @@ function moveDrag(e){ const w=toWorld(e);
     drag.preview=newPartAt(drag.type,w); drag.invalid = DEF[drag.type].kind==='fixed' && !fixedValid(drag.preview,drag.occ); renderParts(); return; }
   if(drag.mode==='wire'){ const b=snapPt(w.x,w.y,drag.occ,null,new Set([attKey(drag.a)])); drag.preview.ends=[drag.a, b||F(w.x,w.y)]; drag.bSnap=b; renderParts(); return; }
   const p=drag.preview, d=DEF[p.type];
+  if(drag.mode==='bend'){ p.bends[drag.k]=[snapH(w.x),snapH(w.y)]; renderParts(); return; }
   if(drag.mode==='end'){ const taken=new Set(p.ends.map((a,j)=>j===drag.i?null:attKey(a)).filter(Boolean)); const pr=d.probe; p.ends[drag.i]=snapPt(w.x,w.y,pr?EMPTY:drag.occ,p.id,pr?null:taken)||F(w.x,w.y); renderParts(); return; }
   if(drag.mode==='body'){ const dx=w.x-drag.w0.x, dy=w.y-drag.w0.y;
     if(d.kind==='fixed'){ p.c=drag.orig.c+Math.round(dx/P); p.r=drag.orig.r+Math.round(dy/P); drag.invalid=!fixedValid(p,drag.occ); }
-    else if(d.kind==='lead'){ const taken=new Set(); p.ends=drag.origPos.map(([x,y])=>{ const s=snapPt(x+dx,y+dy,drag.occ,null,taken); if(s){ taken.add(attKey(s)); return s; } return F(x+dx,y+dy); }); }
+    else if(d.kind==='lead'){ const taken=new Set(); p.ends=drag.origPos.map(([x,y])=>{ const s=snapPt(x+dx,y+dy,drag.occ,null,taken); if(s){ taken.add(attKey(s)); return s; } return F(x+dx,y+dy); }); if(drag.orig.bends) p.bends=drag.orig.bends.map(([x,y])=>[snapH(x+dx),snapH(y+dy)]); }
     else { p.x=Math.round(drag.orig.x+dx); p.y=Math.round(drag.orig.y+dy); p.ends=drag.orig.ends.map(a=>a.k==='f'?F(a.x+dx,a.y+dy):a); }
     renderParts(); }
 }
@@ -1245,18 +1294,37 @@ function endDrag(e){ const dd=drag; stage.style.cursor='';
       if(dd.act&&dd.act.startsWith('mode:')&&p.type==='meter'){ pushHist(); p.props.mode=dd.act.slice(5); commit(); renderInspector(); return; }
       if(dd.act==='power'&&p.type==='driver'){ pushHist(); p.props.on=!p.props.on; commit(); renderInspector(); return; }
       if(p.type==='slide'){ pushHist(); p.props.pos=p.props.pos?0:1; commit(); renderInspector(); return; } }
-    if(dd.mode==='pan'||dd.mode==='wire') select(null);
+    if(dd.mode==='wire'){ select(null); startRoute(dd.a,[]); return; }
+    if(dd.mode==='pan') select(null);
     return; }
   drag=null;
   if(dd.mode==='pan') return;
   if(dd.mode==='new'){ if(dd.outside||dd.invalid){ if(dd.invalid&&!dd.outside) flash('Those holes are taken or off the board. Try another spot.'); renderParts(); return; }
     const p=dd.preview; p.id=nextId++; pushHist(); parts.push(p); sel=p.id; renderInspector(); commit(); return; }
-  if(dd.mode==='wire'){ if(dd.bSnap){ pushHist(); const p=mk('wire',{ends:[dd.a,dd.bSnap],props:{color:wireColor}}); parts.push(p); sel=p.id; renderInspector(); commit(); } else renderParts(); return; }
+  if(dd.mode==='wire'){ if(dd.bSnap){ pushHist(); const p=mk('wire',{ends:[dd.a,dd.bSnap],props:{color:wireColor}}); parts.push(p); sel=p.id; renderInspector(); commit(); } else { const ww=toWorld(e); startRoute(dd.a,[[snapH(ww.x),snapH(ww.y)]]); } return; }
   const p=committed(dd.pid);
   if(dd.invalid){ flash('Those holes are taken or off the board, so it went back.'); renderParts(); return; }
   if(JSON.stringify(dd.preview)===JSON.stringify(dd.orig)){ renderParts(); return; }
   pushHist(); Object.assign(p, dd.preview); commit(); renderInspector();
 }
+/* Click-to-route wires: bends snap to a half-hole grid so long runs stay tidy. */
+let route=null; const snapH=v=>Math.round(v/(P/2))*(P/2);
+const segDist=(q,a,b)=>{ const vx=b[0]-a[0], vy=b[1]-a[1], L=vx*vx+vy*vy||1; let t=((q.x-a[0])*vx+(q.y-a[1])*vy)/L; t=Math.max(0,Math.min(1,t)); return Math.hypot(q.x-(a[0]+t*vx),q.y-(a[1]+t*vy)); };
+function startRoute(a,bends){ const p0=attPos(a); route={a,bends,color:wireColor,cur:bends.length?bends[bends.length-1].slice():p0};
+  const h=$('#hint'); route.oldHint=h.textContent; h.textContent='Routing a wire: click empty board space to add a bend, click a free hole to finish. Backspace removes the last bend, Esc cancels.'; renderParts(); }
+function routePreview(){ const [x,y]=route.cur, b=snapPt(x,y,buildOcc(null),null,new Set([attKey(route.a)]),11); return {id:-3,type:'wire',_ghost:true,props:{color:route.color},ends:[route.a,b||F(x,y)],bends:route.bends}; }
+function endRouteUI(){ if(route&&route.oldHint!=null) $('#hint').textContent=route.oldHint; route=null; }
+function cancelRoute(){ endRouteUI(); renderParts(); }
+function routeClick(e){ e.preventDefault(); if(e.button===2){ cancelRoute(); return; } const w=toWorld(e);
+  const pt=snapPt(w.x,w.y,buildOcc(null),null,new Set([attKey(route.a)]),11);
+  if(pt){ const r=route; endRouteUI(); pushHist(); const p=mk('wire',{ends:[r.a,pt],props:{color:r.color}}); if(r.bends.length) p.bends=r.bends; parts.push(p); sel=p.id; renderInspector(); commit(); return; }
+  route.bends.push([snapH(w.x),snapH(w.y)]); route.cur=[w.x,w.y]; renderParts(); }
+cv.addEventListener('dblclick', e=>{ if(route) return; const bh=e.target.closest('[data-bend]');
+  if(bh){ const [pid,k]=bh.dataset.bend.split(':').map(Number), p=committed(pid); if(p&&p.bends){ pushHist(); p.bends.splice(k,1); if(!p.bends.length) delete p.bends; commit(); } return; }
+  const pe=e.target.closest('[data-pid]'), p=pe&&committed(+pe.dataset.pid); if(!p||p.type!=='wire') return;
+  const w=toWorld(e), pts=[attPos(p.ends[0]),...(p.bends||[]),attPos(p.ends[1])]; let best=0, bd=1e18;
+  for(let i=0;i<pts.length-1;i++){ const dd=segDist(w,pts[i],pts[i+1]); if(dd<bd){ bd=dd; best=i; } }
+  pushHist(); p.bends=p.bends||[]; p.bends.splice(best,0,[snapH(w.x),snapH(w.y)]); sel=p.id; commit(); });
 function cancelDrag(){ if(!drag) return; if(drag.pressed){ const p=committed(drag.pid); if(p) p._pressed=false; } drag=null; stage.style.cursor=''; renderParts(); }
 
 /* palette dragging */
@@ -1283,7 +1351,7 @@ function hover(e){
   // highlight strip & net
   const root=sim.net(node); let s='';
   for(let r=0;r<=17;r++) for(let c=1;c<=COLS;c++){ if(!isHole(c,r)) continue; const k=stripKey(c,r); if(k===node) s+=`<rect class="hl-strip" x="${c*P-5.5}" y="${r*P-5.5}" width="11" height="11" rx="2"/>`; else if(sim.net(k)===root) s+=`<rect class="hl-net" x="${c*P-5.5}" y="${r*P-5.5}" width="11" height="11" rx="2"/>`; }
-  for(const m of parts){ const d=DEF[m.type]; if(!d.terms) continue; d.terms.forEach((t,i)=>{ const k=`T${m.id}.${i}`; if(k===node||sim.net(k)===root) s+=`<circle class="${k===node?'hl-strip':'hl-net'}" cx="${m.x+t[0]}" cy="${m.y+t[1]}" r="9"/>`; }); }
+  for(const m of parts){ const d=DEF[m.type]; if(!d.terms) continue; d.terms.forEach((t,i)=>{ const k=`T${m.id}.${i}`; if(k===node||sim.net(k)===root) s+=`<circle class="${k===node?'hl-strip':'hl-net'}" cx="${modXY(m,t[0],t[1])[0]}" cy="${modXY(m,t[0],t[1])[1]}" r="9"/>`; }); }
   hlG.innerHTML=s;
   tip.innerHTML=label; tip.hidden=false; const r=stage.getBoundingClientRect(); let x=e.clientX-r.left+14, y=e.clientY-r.top+14; if(x>r.width-220) x=e.clientX-r.left-230; if(y>r.height-50) y=e.clientY-r.top-50; tip.style.left=x+'px'; tip.style.top=y+'px';
 }
@@ -1325,11 +1393,13 @@ let clearArm=null; $('#bClear').onclick=()=>{ const b=$('#bClear'); if(!clearArm
 
 window.addEventListener('keydown', e=>{
   if(e.target.closest('input,select,textarea')) return;
+  if(route){ const k0=e.key; if(k0==='Escape'){ e.preventDefault(); cancelRoute(); return; } if(k0==='Backspace'||k0==='Delete'){ e.preventDefault(); if(route.bends.length){ route.bends.pop(); renderParts(); } else cancelRoute(); return; } }
   const k=e.key.toLowerCase();
   if((e.ctrlKey||e.metaKey)&&k==='z'){ e.preventDefault(); e.shiftKey?redo():undo(); return; }
   if((e.ctrlKey||e.metaKey)&&k==='y'){ e.preventDefault(); redo(); return; }
   if((e.ctrlKey||e.metaKey)&&k==='d'){ e.preventDefault(); if(sel!=null) duplicatePart(sel); return; }
   if(k==='r'&&!e.ctrlKey&&!e.metaKey){ if(drag&&drag.started&&(drag.mode==='new')){ drag.rot=((drag.rot||0)+1)%4; if(drag.lastW){ drag.preview=newPartAt(drag.type,drag.lastW); drag.invalid=DEF[drag.type].kind==='fixed'&&!fixedValid(drag.preview,drag.occ); renderParts(); } return; }
+    if(drag&&drag.started&&drag.mode==='body'&&DEF[drag.preview.type].kind==='module'){ drag.preview.rot=((drag.preview.rot||0)+1)%4; renderParts(); return; }
     if(drag&&drag.started&&drag.mode==='body'&&DEF[drag.preview.type].kind==='fixed'){ drag.preview.rot=((drag.preview.rot||0)+1)%4; drag.invalid=!fixedValid(drag.preview,drag.occ); renderParts(); return; }
     if(sel!=null) rotatePart(sel); return; }
   if(k==='delete'||k==='backspace'){ if(sel!=null){ e.preventDefault(); deletePart(sel); } return; }
@@ -1365,7 +1435,7 @@ const EX={
   reg:{name:'LD1117 3.3 V regulator from 9 V', build(){ const psu=mk('psu',{x:30,y:-170,props:{volts:9}}); psu.ends=[H(2,0),H(2,1)];
     return [psu, mk('reg',{c:10,r:3}), W(H(12,4),H(13,0),'#e23b3b'), W(H(10,4),H(10,1),'#262626'),
       mk('resistor',{ends:[H(11,5),H(16,5)],props:{ohms:220}}), mk('led',{ends:[H(16,6),H(17,6)],props:{color:'green'}}), W(H(17,7),H(19,1),'#262626')]; }},
-  motor:{name:'Kitronik driver + DC motor', build(){ const drv=mk('driver',{x:120,y:-300,props:{on:true,pico:{usb:false,gpio:{GP2:{m:'pwm',f:1000,d:70},GP3:{m:'out0'}}}}});
+  motor:{name:'Kitronik driver + DC motor', build(){ const drv=mk('driver',{x:120,y:-300,props:{on:true,pico:{usb:false,gpio:{GP12:{m:'pwm',f:1000,d:70},GP13:{m:'out0'}}}}});
     const psu=mk('psu',{x:-120,y:-250,props:{volts:6}}); psu.ends=[T(drv.id,0),T(drv.id,1)]; const mot=mk('motor',{x:560,y:-300}); mot.ends=[T(drv.id,2),T(drv.id,3)];
     return [drv,psu,mot]; }},
 };
@@ -1393,7 +1463,7 @@ Object.assign(EX,{
   servoext:{name:'Servo on its own 5 V supply (shared ground)', build(){ const pico=mk('pico',{c:3,r:5,props:{usb:true,gpio:{GP16:{m:'pwm',f:50,d:10}}}});
     const psu=mk('psu',{x:900,y:430,props:{volts:5}}); psu.ends=[H(40,16),H(40,17)]; const s=mk('servo',{x:620,y:430}); s.ends=[H(45,17),H(44,16),H(22,3)];
     return [pico,psu,s,W(H(20,13),H(20,17),'#262626')]; }},
-  twomotor:{name:'Kitronik driver: two motors, forward and reverse', build(){ const drv=mk('driver',{x:120,y:-300,props:{on:true,pico:{usb:false,gpio:{GP2:{m:'out1'},GP3:{m:'out0'},GP6:{m:'out0'},GP7:{m:'pwm',f:1000,d:50}}}}});
+  twomotor:{name:'Kitronik driver: two motors, forward and reverse', build(){ const drv=mk('driver',{x:120,y:-300,props:{on:true,pico:{usb:false,gpio:{GP12:{m:'out1'},GP13:{m:'out0'},GP9:{m:'out0'},GP8:{m:'pwm',f:1000,d:50}}}}});
     const psu=mk('psu',{x:-120,y:-250,props:{volts:6}}); psu.ends=[T(drv.id,0),T(drv.id,1)];
     const m1=mk('motor',{x:560,y:-330}); m1.ends=[T(drv.id,2),T(drv.id,3)]; const m2=mk('motor',{x:560,y:-170}); m2.ends=[T(drv.id,4),T(drv.id,5)]; return [drv,psu,m1,m2]; }},
 });
@@ -1778,7 +1848,7 @@ function setPane(t){ const was=paneTab; paneTab=t; try{ localStorage.setItem('pi
   $('#schem').hidden=!t; $('#paneSch').hidden=t!=='sch'; $('#paneCode').hidden=t!=='code'; $('#paneCheck').hidden=t!=='check'; $('#bCheck').classList.toggle('on',t==='check');
   document.querySelectorAll('.ptab').forEach(b=>b.classList.toggle('on',b.dataset.ptab===t));
   $('#bSch').classList.toggle('on',t==='sch'); $('#bCode').classList.toggle('on',t==='code');
-  if(t==='sch') renderSchem(); if(t==='code') codeShow(); if(t==='check') renderCheck();
+  $('#hsplit').hidden=!t; if(t==='sch') renderSchem(); if(t==='code') codeShow(); if(t==='check') renderCheck();
   if(!!was!==!!t) requestAnimationFrame(fitView); }
 $('#bSch').onclick=()=>setPane(paneTab==='sch'?null:'sch');
 $('#bCode').onclick=()=>setPane(paneTab==='code'?null:'code');
@@ -1786,7 +1856,7 @@ document.querySelectorAll('.ptab').forEach(b=>{ b.onclick=()=>setPane(b.dataset.
 $('#bPaneX').onclick=()=>setPane(null);
 $('#bCheck').onclick=()=>setPane(paneTab==='check'?null:'check');
 $('#cSchV').onchange=e=>{ schV=e.target.checked; renderSchem(); };
-$('#bSchBig').onclick=()=>{ const b=$('#schem').classList.toggle('big'); $('#bSchBig').textContent=b?'Shrink':'Expand'; requestAnimationFrame(fitView); };
+$('#bSchBig').onclick=()=>{ paneH=null; $('#schem').style.flexBasis=''; try{ localStorage.removeItem('pico-bb-lab-paneh'); }catch(_){} const b=$('#schem').classList.toggle('big'); $('#bSchBig').textContent=b?'Shrink':'Expand'; requestAnimationFrame(fitView); };
 
 /* ================= MicroPython ================= */
 const MOTOR_LIB=`# A small motor library for the Kitronik Motor Driver Board (WNE robot wiring).
@@ -2183,7 +2253,7 @@ function conAdd(lines, cls){ const atBottom=con.scrollTop+con.clientHeight>=con.
   for(const s of lines){ const d=document.createElement('div'); if(cls) d.className=cls; d.textContent=s; frag.appendChild(d); }
   con.appendChild(frag); while(con.childNodes.length>800) con.removeChild(con.firstChild); if(atBottom) con.scrollTop=con.scrollHeight; }
 const conSys=(s,c='s')=>conAdd([s],c);
-$('#bConClear').onclick=()=>{ con.textContent=''; };
+$('#bConClear').onclick=()=>{ if(ctab==='plot') plotClear(); else if(ctab==='uart') $('#uartOut').textContent=''; else con.textContent=''; };
 
 /* targets */
 const targets=()=>parts.filter(p=>p.type==='pico'||p.type==='driver');
@@ -2226,7 +2296,7 @@ function runCode(){
   if(pre.length) conCard({title:pre[0].title,hint:pre[0].hint,loc:pre[0].line?{file:'main.py',line:pre[0].line}:null,why:whyFor(pre[0].title)},'hint');
   let worker; try{ worker=new Worker('mpy-worker.js',{type:'module'}); }catch(err){ conSys('MicroPython cannot start on this page: '+err.message,'e'); return; }
   pushHist(); gpioOf(p).gpio={}; commit();               // like a soft reset: every pin starts as an input
-  const live=liveInputs(), sab=live?new SharedArrayBuffer(40*8+8):null;
+  const live=liveInputs(), sab=live?new SharedArrayBuffer(344+4096):null; plotClear(); $('#uartSt').textContent='UART0 · Pico TX (GP0) → this panel, this panel → Pico RX (GP1) · not opened yet';
   mpRun={worker,pid:p.id,sab,live,t0:performance.now(),limit:(+$('#selLimit').value||60)*1000,started:false,pending:{},raf:0,lastInsp:0};
   if(sab) new Float64Array(sab,0,40).set(readInputs(p.id));
   worker.onmessage=onWorker;
@@ -2238,7 +2308,9 @@ function runCode(){
 function onWorker(e){ const m=e.data; if(!mpRun) return;
   if(m.t==='started'){ mpRun.started=true; mpRun.t0=performance.now(); clearTimeout(mpRun.timer); mpRun.timer=setTimeout(()=>stopCode('limit'),mpRun.limit); updRunUI(); }
   else if(m.t==='pins'){ Object.assign(mpRun.pending,m.pins); if(!mpRun.raf) mpRun.raf=setTimeout(applyPending,16); }
-  else if(m.t==='out'){ for(const l of m.lines) conAdd([l.s], l.k==='e'?'e':''); }
+  else if(m.t==='out'){ for(const l of m.lines){ conAdd([l.s], l.k==='e'?'e':''); if(l.k==='o') plotFeed(l.s); } }
+  else if(m.t==='uart'){ uartShow(m.s,'rx'); }
+  else if(m.t==='uartopen'){ $('#uartSt').textContent=`UART${m.id} open at ${m.baud} baud · Pico TX (GP${m.id?4:0}) → this panel, this panel → Pico RX (GP${m.id?5:1})`; }
   else if(m.t==='done'){ applyPending(); stopCode('done'); }
   else if(m.t==='error'){ applyPending(); showPyError(m.msg); stopCode('error'); }
   else if(m.t==='reset'){ applyPending(); stopCode('reset'); }
@@ -2495,7 +2567,7 @@ $('#bReCheck').onclick=()=>{ simulate(); renderParts(); renderCheck(); };
 var flashSet=null;
 function gpPoint(name){ const p=committed(code.target); if(!p) return null; const n=PICO_NUM[name]; if(!n) return null;
   if(p.type==='pico'){ const h=fixedPins(p)[n-1]; return [h.c*P,h.r*P]; }
-  const ti={GP0:8,GP1:9,GP27:10,GP26:11}[name]; if(ti==null) return null; const t=DEF.driver.terms[ti]; return [p.x+t[0],p.y+t[1]]; }
+  const ti={GP0:8,GP1:9,GP27:10,GP26:11}[name]; if(ti==null) return null; const t=DEF.driver.terms[ti]; return modXY(p,t[0],t[1]); }
 function flashFor(x){ const pts=(x.gp||[]).map(gpPoint).filter(Boolean); if(!(x.pids&&x.pids.length)&&!pts.length) return;
   flashSet={pids:x.pids||[],pts,until:performance.now()+2600}; drawOverlay(); if(x.pids&&x.pids[0]&&committed(x.pids[0])) select(x.pids[0]);
   setTimeout(()=>{ if(flashSet&&performance.now()>=flashSet.until){ flashSet=null; drawOverlay(); } },2700); }
@@ -2646,12 +2718,124 @@ const traceMarks=[];
 function renderTraceMarks(){ traceMarks.splice(0).forEach(el=>el.remove()); if(!traceState||!traceState.lines.length||code.active!=='main.py') return;
   const lh=lineH(), host=document.querySelector('.ed-c'); for(const ln of traceState.lines){ const d=document.createElement('div'); d.className='ed-trace'; d.style.top=(8+(ln-1)*lh)+'px'; d.style.height=lh+'px'; host.prepend(d); traceMarks.push(d); } }
 
+/* ================= theme ================= */
+const THEMES=['system','light','dark','alldark'], THEME_NAMES={system:'System',light:'Light',dark:'Dark',alldark:'All dark'}; let theme='system';
+try{ theme=localStorage.getItem('pico-bb-lab-theme')||'system'; }catch(e){}
+function applyTheme(){ const r=document.documentElement;
+  if(!THEMES.includes(theme)) theme='system';
+  if(theme==='system'){ if(r.dataset.bbset){ delete r.dataset.theme; delete r.dataset.bbset; } }
+  else { r.dataset.theme=theme==='alldark'?'dark':theme; r.dataset.bbset='1'; }
+  if(theme==='alldark') r.dataset.board='dark'; else delete r.dataset.board;
+  $('#bTheme').textContent='Theme: '+THEME_NAMES[theme]; try{ drawPlot(); }catch(_){} }
+$('#bTheme').onclick=()=>{ theme=THEMES[(THEMES.indexOf(theme)+1)%THEMES.length]; try{ localStorage.setItem('pico-bb-lab-theme',theme); }catch(e){} applyTheme(); };
+applyTheme();
+
+/* ================= resizable panels ================= */
+let conW=null, paneH=null; try{ conW=+localStorage.getItem('pico-bb-lab-conw')||null; paneH=+localStorage.getItem('pico-bb-lab-paneh')||null; }catch(e){}
+function applySizes(){ const cm=document.querySelector('.code-main'), wide=innerWidth>880;
+  cm.style.gridTemplateColumns = conW&&wide ? `minmax(0,1fr) 6px ${conW}px` : '';
+  const sc=$('#schem'); if(paneH&&wide){ sc.classList.remove('big'); sc.style.flexBasis=paneH+'px'; } }
+function dragSplit(el,onMove,onEnd){ el.addEventListener('pointerdown',e=>{ e.preventDefault(); el.setPointerCapture(e.pointerId); el.classList.add('on');
+  const mv=ev=>onMove(ev), up=()=>{ el.classList.remove('on'); el.removeEventListener('pointermove',mv); el.removeEventListener('pointerup',up); el.removeEventListener('pointercancel',up); onEnd&&onEnd(); };
+  el.addEventListener('pointermove',mv); el.addEventListener('pointerup',up); el.addEventListener('pointercancel',up); }); }
+dragSplit($('#vsplit'),ev=>{ const r=document.querySelector('.code-main').getBoundingClientRect(); conW=Math.round(clamp(r.right-ev.clientX,180,r.width-240)); applySizes(); },
+  ()=>{ try{ localStorage.setItem('pico-bb-lab-conw',conW); }catch(e){} drawPlot(); });
+dragSplit($('#hsplit'),ev=>{ const r=$('#stagebox').getBoundingClientRect(); paneH=Math.round(clamp(r.bottom-ev.clientY,150,r.height-150)); applySizes(); },
+  ()=>{ try{ localStorage.setItem('pico-bb-lab-paneh',paneH); }catch(e){} fitView(); drawPlot(); });
+window.addEventListener('resize',()=>{ applySizes(); drawPlot(); });
+
+/* ================= console tabs, plotter, UART ================= */
+let ctab='con'; const plot={series:new Map(),n:0,paused:false,raf:0};
+const PLOT_COLORS=['#2fc4b2','#f0a03c','#a98bff','#5aa2ff','#ff6f86','#7fd36a','#e6c35a','#c0c7c5'];
+document.querySelector('.con-head').addEventListener('click',e=>{ const b=e.target.closest('[data-ctab]'); if(!b) return; ctab=b.dataset.ctab;
+  document.querySelectorAll('.ctab').forEach(x=>x.classList.toggle('on',x===b));
+  con.hidden=ctab!=='con'; $('#plotWrap').hidden=ctab!=='plot'; $('#uartWrap').hidden=ctab!=='uart'; $('#bPlotPause').hidden=ctab!=='plot';
+  if(ctab==='plot') drawPlot(); if(ctab==='uart') $('#uartIn').focus(); });
+$('#bPlotPause').onclick=()=>{ plot.paused=!plot.paused; $('#bPlotPause').textContent=plot.paused?'Resume':'Pause'; };
+function plotClear(){ plot.series.clear(); plot.n=0; drawPlot(); }
+function plotFeed(line){ if(plot.paused) return; const named=[...line.matchAll(/([A-Za-z_]\w*)\s*[=:]\s*(-?\d+(?:\.\d+)?(?:e[-+]?\d+)?)/gi)]; let vals;
+  if(named.length) vals=named.map(m=>[m[1],+m[2]]);
+  else { const nums=line.match(/-?\d+(?:\.\d+)?(?:e[-+]?\d+)?/gi); if(!nums) return; vals=nums.slice(0,8).map((v,i)=>[nums.length>1?'value '+(i+1):'value',+v]); }
+  plot.n++; for(const [k,v] of vals.slice(0,8)){ if(!isFinite(v)) continue; if(!plot.series.has(k)){ if(plot.series.size>=8) continue; plot.series.set(k,[]); } const a=plot.series.get(k); a.push([plot.n,v]); if(a.length>600) a.shift(); }
+  if(ctab==='plot'&&!plot.raf) plot.raf=requestAnimationFrame(()=>{ plot.raf=0; drawPlot(); }); }
+const fmtNum=v=>{ const a=Math.abs(v); return a>=1000?v.toFixed(0):a>=10?v.toFixed(1):v.toFixed(2); };
+function drawPlot(){ if(ctab!=='plot') return; const c2=$('#plotCv'), wrap=$('#plotWrap'); $('#plotEmpty').hidden=plot.series.size>0;
+  const W=c2.clientWidth, Hh=c2.clientHeight; if(W<30||Hh<30) return; const dpr=devicePixelRatio||1; c2.width=Math.round(W*dpr); c2.height=Math.round(Hh*dpr);
+  const c=c2.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,Hh);
+  if(!plot.series.size){ $('#plotLeg').innerHTML=''; return; }
+  let lo=Infinity, hi=-Infinity, x0=Infinity, x1=-Infinity; for(const a of plot.series.values()) for(const [x,y] of a){ if(y<lo) lo=y; if(y>hi) hi=y; if(x<x0) x0=x; if(x>x1) x1=x; }
+  if(lo===hi){ lo-=1; hi+=1; } const pad=(hi-lo)*0.08; lo-=pad; hi+=pad; if(x1===x0) x1=x0+1;
+  const L=46, Rm=10, Tp=8, B=10, X=x=>L+(x-x0)/(x1-x0)*(W-L-Rm), Y=y=>Tp+(hi-y)/(hi-lo)*(Hh-Tp-B);
+  c.font='10px '+getComputedStyle(document.body).getPropertyValue('--font-mono'); c.lineWidth=1;
+  for(let i=0;i<=4;i++){ const v=lo+(hi-lo)*i/4, y=Math.round(Y(v))+0.5; c.strokeStyle='rgba(255,255,255,.08)'; c.beginPath(); c.moveTo(L,y); c.lineTo(W-Rm,y); c.stroke(); c.fillStyle='#8fa7a1'; c.fillText(fmtNum(v),4,y+3); }
+  let ci=0; for(const a of plot.series.values()){ c.strokeStyle=PLOT_COLORS[ci++%PLOT_COLORS.length]; c.lineWidth=2; c.lineJoin='round'; c.beginPath(); a.forEach(([x,y],i)=>{ i?c.lineTo(X(x),Y(y)):c.moveTo(X(x),Y(y)); }); c.stroke();
+    const [lx,ly]=a[a.length-1]; c.fillStyle=c.strokeStyle; c.beginPath(); c.arc(X(lx),Y(ly),3,0,7); c.fill(); }
+  ci=0; $('#plotLeg').innerHTML=[...plot.series].map(([k,a])=>`<span><i style="background:${PLOT_COLORS[ci++%PLOT_COLORS.length]}"></i>${esc(k)} <b>${fmtNum(a[a.length-1][1])}</b></span>`).join(''); }
+function uartShow(text,kind){ const out=$('#uartOut'), at=out.scrollTop+out.clientHeight>=out.scrollHeight-20, sp=document.createElement('span'); if(kind!=='rx') sp.className=kind;
+  sp.textContent = kind==='tx' ? '» '+text+'\n' : kind==='sys' ? text+'\n' : text; out.appendChild(sp); while(out.childNodes.length>1500) out.removeChild(out.firstChild); if(at) out.scrollTop=out.scrollHeight; }
+function uartSend(){ const inp=$('#uartIn'), eol={lf:'\n',crlf:'\r\n',none:''}[$('#uartEol').value], txt=inp.value+eol; if(!inp.value&&!eol) return;
+  if(!mpRun){ uartShow('Run a program that creates a UART, e.g. uart = UART(0, 115200), then send.','sys'); return; }
+  if(!mpRun.sab){ uartShow('Sending to the Pico needs live inputs. Use the GitHub Pages link.','sys'); return; }
+  const bytes=new TextEncoder().encode(txt), hdr=new Int32Array(mpRun.sab,336,2), buf=new Uint8Array(mpRun.sab,344,4096); let w=Atomics.load(hdr,0);
+  for(const b of bytes){ buf[w%4096]=b; w++; } Atomics.store(hdr,0,w); uartShow(inp.value,'tx'); inp.value=''; }
+$('#bUartSend').onclick=uartSend; $('#uartIn').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); uartSend(); } });
+
+/* ================= autocomplete ================= */
+const AC_MOD={
+  machine:[['Pin','class','Pin(id, mode, pull)'],['PWM','class','PWM(Pin(n), freq=…, duty_u16=…)'],['ADC','class','ADC(26)'],['Timer','class','Timer(period=ms, mode=Timer.PERIODIC, callback=f)'],['UART','class','UART(0, 115200)'],['freq','fn','freq()'],['reset','fn','reset()'],['idle','fn','idle()'],['lightsleep','fn','lightsleep(ms)'],['unique_id','fn','unique_id()']],
+  time:[['sleep','fn','sleep(seconds)'],['sleep_ms','fn','sleep_ms(ms)'],['sleep_us','fn','sleep_us(us)'],['ticks_ms','fn','ticks_ms()'],['ticks_us','fn','ticks_us()'],['ticks_diff','fn','ticks_diff(new, old)'],['ticks_add','fn','ticks_add(t, delta)'],['time','fn','time()']],
+  utime:null, WNE103:[['Servo','class','Servo(pin)'],['KitronikPicoMotor','class','KitronikPicoMotor()']],
+  math:[['pi','const','3.14159…'],['e','const','2.71828…'],['sqrt','fn','sqrt(x)'],['log','fn','log(x)'],['sin','fn','sin(x)'],['cos','fn','cos(x)'],['tan','fn','tan(x)'],['pow','fn','pow(x, y)'],['floor','fn','floor(x)'],['ceil','fn','ceil(x)'],['fabs','fn','fabs(x)'],['radians','fn','radians(deg)'],['degrees','fn','degrees(rad)']],
+  Pin:[['OUT','const','output mode'],['IN','const','input mode'],['PULL_UP','const','pull-up'],['PULL_DOWN','const','pull-down'],['IRQ_RISING','const','irq trigger'],['IRQ_FALLING','const','irq trigger'],['OPEN_DRAIN','const','mode']],
+  Timer:[['PERIODIC','const','repeat'],['ONE_SHOT','const','once']] };
+AC_MOD.utime=AC_MOD.time;
+const AC_OBJ={
+  Pin:[['value','fn','value() or value(1)'],['on','fn','on()'],['off','fn','off()'],['toggle','fn','toggle()'],['high','fn','high()'],['low','fn','low()'],['init','fn','init(mode, pull)'],['irq','fn','irq(handler, trigger)']],
+  PWM:[['freq','fn','freq(hz)'],['duty_u16','fn','duty_u16(0–65535)'],['duty_ns','fn','duty_ns(ns)'],['deinit','fn','deinit()']],
+  ADC:[['read_u16','fn','read_u16() → 0–65535']], Timer:[['init','fn','init(period=ms, mode=…, callback=f)'],['deinit','fn','deinit()']],
+  UART:[['write','fn','write(text)'],['read','fn','read(n)'],['readline','fn','readline()'],['any','fn','any()'],['deinit','fn','deinit()']],
+  Servo:[['STServo','fn','STServo(angle 0–180)'],['CONServo','fn','CONServo("power", -100…100) or ("duty", 3500…6500)']],
+  KitronikPicoMotor:[['motorOn','fn',"motorOn(motor, 'f'/'r', speed 0–100)"],['motorOff','fn','motorOff(motor)']] };
+const AC_KW=['import','from','def','return','while','for','in','if','elif','else','True','False','None','and','or','not','break','continue','pass','try','except','finally','class','lambda','global','with','as','is'];
+const AC_BI=[['print','fn','print(value, …)'],['range','fn','range(stop) / range(start, stop)'],['len','fn','len(x)'],['int','fn','int(x)'],['float','fn','float(x)'],['str','fn','str(x)'],['abs','fn','abs(x)'],['min','fn','min(a, b)'],['max','fn','max(a, b)'],['round','fn','round(x, digits)'],['list','fn','list()'],['input','fn','input(prompt)']];
+const acBox=document.createElement('div'); acBox.className='ac'; acBox.hidden=true; document.querySelector('.ed-c').appendChild(acBox);
+let ac={items:[],sel:0,start:0};
+function acTypes(src){ const t={}; for(const m of src.matchAll(/^\s*(\w+)\s*=\s*(?:machine\.|WNE103\.)?(Pin|PWM|ADC|Timer|UART|Servo|KitronikPicoMotor)\s*\(/gm)) t[m[1]]=m[2]; return t; }
+function acCompute(force){ if(edT.readOnly) return null; const v=edT.value, pos=edT.selectionStart; if(pos!==edT.selectionEnd) return null;
+  const ls=v.lastIndexOf('\n',pos-1)+1, before=v.slice(ls,pos); if(/#/.test(before.replace(/(["'])(?:\\.|(?!\1).)*\1/g,''))) return null;
+  if(((before.match(/"/g)||[]).length%2)||((before.match(/'/g)||[]).length%2)) return null;
+  const m=before.match(/(?:([A-Za-z_]\w*)\.)?([A-Za-z_]\w*)?$/); if(!m) return null; const obj=m[1], word=m[2]||'';
+  let cands=[];
+  if(obj){ const types=acTypes(v); cands = AC_MOD[obj] || AC_OBJ[types[obj]] || (obj==='board'?AC_OBJ.KitronikPicoMotor:null) || []; if(!cands.length) return null; }
+  else { if(!force&&word.length<2) return null; const own=new Set(); v.replace(/\b[A-Za-z_]\w*\b/g,x=>{ if(x!==word&&x.length>1) own.add(x); return x; });
+    for(const k of Object.keys(AC_MOD)) own.delete(k);
+    cands=[...AC_BI,...AC_KW.map(k=>[k,'kw','']),...['machine','time','WNE103','math'].map(k=>[k,'mod','']),...[...own].filter(x=>!PY_KW.has(x)&&!AC_BI.some(b=>b[0]===x)).map(x=>[x,'name',''])]; }
+  const lw=word.toLowerCase(); let items=cands.filter(c=>c[0].toLowerCase().startsWith(lw)&&c[0]!==word);
+  if(word) items=items.concat(cands.filter(c=>!c[0].toLowerCase().startsWith(lw)&&c[0].toLowerCase().includes(lw)));
+  const seen=new Set(); items=items.filter(c=>!seen.has(c[0])&&seen.add(c[0])).slice(0,12); if(!items.length) return null;
+  return {items,start:pos-word.length,line:v.slice(0,pos).split('\n').length,col:before.length-word.length}; }
+function acShow(force){ const r=acCompute(force); if(!r){ acHide(); return; } ac={items:r.items,sel:0,start:r.start};
+  acBox.innerHTML=r.items.map((c,i)=>`<div class="ac-i${i===0?' on':''}" data-i="${i}"><span><span class="k">${c[1]}</span>${esc(c[0])}</span><small>${esc(c[2])}</small></div>`).join('');
+  acBox.style.top=(8+r.line*lineH()+2)+'px'; acBox.style.left=(12+r.col*charW())+'px'; acBox.hidden=false; }
+function acHide(){ acBox.hidden=true; }
+function acAccept(){ const c=ac.items[ac.sel]; if(!c) return; edT.setSelectionRange(ac.start,edT.selectionStart); edInsert(c[0]); acHide(); }
+acBox.addEventListener('mousedown',e=>{ const it=e.target.closest('.ac-i'); if(!it) return; e.preventDefault(); ac.sel=+it.dataset.i; acAccept(); });
+edT.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&(e.key===' '||e.code==='Space')){ e.preventDefault(); e.stopImmediatePropagation(); acShow(true); return; }
+  if(acBox.hidden) return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); e.stopImmediatePropagation(); ac.sel=(ac.sel+(e.key==='ArrowDown'?1:-1)+ac.items.length)%ac.items.length;
+    acBox.querySelectorAll('.ac-i').forEach((el,i)=>el.classList.toggle('on',i===ac.sel)); acBox.querySelector('.ac-i.on')?.scrollIntoView({block:'nearest'}); return; }
+  if(e.key==='Enter'||e.key==='Tab'){ e.preventDefault(); e.stopImmediatePropagation(); acAccept(); return; }
+  if(e.key==='Escape'){ e.preventDefault(); e.stopImmediatePropagation(); acHide(); } },true);
+edT.addEventListener('input',e=>{ const ch=(e.data||''); if(/[A-Za-z_.]/.test(ch)) acShow(false); else acHide(); });
+edT.addEventListener('blur',()=>setTimeout(acHide,150)); edT.addEventListener('click',acHide);
+
 /* ================= boot ================= */
 function boot(){
   renderDefs(); renderBoard(); renderBin();
   let loaded=false; try{ const s=localStorage.getItem('pico-bb-lab-v1'); if(s){ const o=JSON.parse(s); if(Array.isArray(o.parts)&&o.parts.every(p=>DEF[p.type])){ parts=o.parts; nextId=o.nextId||1+Math.max(0,...parts.map(p=>p.id)); loaded=true; } } }catch(e){}
   if(!loaded){ nextId=1; parts=EX.blink.build(); }
-  renderInspector(); commit(); setPane(paneTab); fitView(); requestAnimationFrame(tick);
+  renderInspector(); commit(); setPane(paneTab); applySizes(); fitView(); requestAnimationFrame(tick);
   new ResizeObserver(()=>{ if(!stage.dataset.fitted){ fitView(); } }).observe(stage);
   setTimeout(()=>{ stage.dataset.fitted='1'; }, 600);
 }
